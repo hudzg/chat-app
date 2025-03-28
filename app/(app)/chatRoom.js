@@ -42,20 +42,57 @@ import { ref, onValue, set, remove, push, get } from "firebase/database";
 
 const configuration = {
   iceServers: [
-    { urls: "stun:stun.l.google.com:19302" },
-    { urls: "stun:stun1.l.google.com:19302" },
-    { urls: "stun:stun2.l.google.com:19302" },
-    { urls: "stun:stun3.l.google.com:19302" },
-    { urls: "stun:stun4.l.google.com:19302" },
-    { urls: "stun:stun.anyfirewall.com:3478" },
-    { urls: "stun:stun.ekiga.net:3478" },
     {
-      urls: "turn:openrelay.metered.ca:80",
-      username: "openrelayproject",
-      credential: "openrelayproject",
+      urls: "stun:stun.relay.metered.ca:80",
     },
+    {
+      urls: "stun:stun.l.google.com:19302",
+    },
+    {
+      urls: "stun:stun.l.google.com:5349",
+    },
+    {
+      urls: "stun:stun1.l.google.com:3478",
+    },
+    {
+      urls: "stun:stun1.l.google.com:5349",
+    },
+    {
+      urls: "stun:stun2.l.google.com:19302",
+    },
+    {
+      urls: "stun:stun2.l.google.com:5349",
+    },
+    {
+      urls: "stun:stun3.l.google.com:3478",
+    },
+    {
+      urls: "stun:stun3.l.google.com:5349",
+    },
+    {
+      urls: "stun:stun.l.google.com:19302",
+    },
+    // {
+    //   urls: "turn:global.relay.metered.ca:80",
+    //   username: "02f239a44191a571afc2766c",
+    //   credential: "eFW0JEJAEWcMnrmu",
+    // },
+    // {
+    //   urls: "turn:global.relay.metered.ca:80?transport=tcp",
+    //   username: "02f239a44191a571afc2766c",
+    //   credential: "eFW0JEJAEWcMnrmu",
+    // },
+    // {
+    //   urls: "turn:global.relay.metered.ca:443",
+    //   username: "02f239a44191a571afc2766c",
+    //   credential: "eFW0JEJAEWcMnrmu",
+    // },
+    // {
+    //   urls: "turns:global.relay.metered.ca:443?transport=tcp",
+    //   username: "02f239a44191a571afc2766c",
+    //   credential: "eFW0JEJAEWcMnrmu",
+    // },
   ],
-  iceTransportPolicy: "relay",
 };
 
 export default function ChatRoom() {
@@ -98,7 +135,7 @@ export default function ChatRoom() {
         setIncomingCall(true);
       }
     });
-    unsubscribeRefs.current.push(unsubOffer);
+    // unsubscribeRefs.current.push(unsubOffer);
 
     return () => {
       unsub();
@@ -152,9 +189,10 @@ export default function ChatRoom() {
 
       newPC.oniceconnectionstatechange = () => {
         const state = newPC.iceConnectionState;
-        console.log("ICE Connection State:", state);
+        console.log(`${role} ICE Connection State:`, state);
         if (state === "failed") {
-          console.error("Kết nối ICE thất bại!");
+          console.error(`${role} Kết nối ICE thất bại! Thử khởi động lại...`);
+          newPC.restartIce(); // Khởi động lại quá trình ICE
         }
       };
 
@@ -397,7 +435,7 @@ export default function ChatRoom() {
 const styles = StyleSheet.create({
   fullScreenContainer: {
     flex: 1,
-    backgroundColor: "black",
+    // backgroundColor: "black",
     position: "relative",
     justifyContent: "center",
     alignItems: "center",
@@ -405,7 +443,8 @@ const styles = StyleSheet.create({
   remoteVideo: {
     width: "100%",
     height: "100%",
-    zIndex: 30,
+    zIndex: 1,
+    position: "absolute",
   },
   localVideo: {
     width: wp(30),
@@ -416,7 +455,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 2,
     borderColor: "white",
-    zIndex: 20,
+    zIndex: 2,
   },
   endCallButton: {
     position: "absolute",
