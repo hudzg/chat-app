@@ -1,4 +1,4 @@
-import { View, Text, Platform } from "react-native";
+import { View, Text, Platform, TouchableOpacity } from "react-native";
 import React from "react";
 import {
   widthPercentageToDP as wp,
@@ -15,9 +15,11 @@ import {
   MenuTrigger,
 } from "react-native-popup-menu";
 import { CustomMenuItem } from "./CustomMenuItem";
-import { AntDesign, Feather } from "@expo/vector-icons";
+import { AntDesign, Feather, Ionicons } from "@expo/vector-icons";
+import { useRouter } from 'expo-router';
 
 const ios = Platform.OS === "ios";
+
 export default function HomeHeader() {
   const { user, logout } = useAuth();
   const { top } = useSafeAreaInsets();
@@ -35,6 +37,7 @@ export default function HomeHeader() {
           Chats
         </Text>
       </View>
+      {/* <AddFriendButton/> */}
       <View>
         <Menu>
           <MenuTrigger
@@ -84,3 +87,18 @@ export default function HomeHeader() {
 const Divider = () => {
   return <View className="p-[1px] w-full bg-neutral-200" />;
 };
+
+// const AddFriendButton = () => {
+//   const router = useRouter();
+
+//   return <TouchableOpacity onPress = {() => {
+//     router.push("/search-friend");
+//   }}>
+//     <Ionicons
+//       name='person-add'
+//       size={26}
+//       color='white'
+//       style={{marginRight: 15}}
+//     />
+//   </TouchableOpacity>
+// }

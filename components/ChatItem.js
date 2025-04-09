@@ -19,7 +19,7 @@ export default function ChatItem({ currentUser, item, router, noBorder }) {
   const [lastMessage, setLastMessage] = useState(undefined);
 
   const openChatRoom = () => {
-    router.push({ pathname: "/chatRoom", params: item });
+    router.push({ pathname: "/home/chat-room", params: item });
   };
 
   useEffect(() => {
