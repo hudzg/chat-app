@@ -1,19 +1,24 @@
 import { View, Text, Button, ActivityIndicator } from "react-native";
 import React, { useEffect, useState } from "react";
-import { useAuth } from "../../context/authContext";
+import { useAuth } from "../../../context/authContext";
 import { StatusBar } from "expo-status-bar";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
-import ChatList from "../../components/ChatList";
-import Loading from "../../components/Loading";
-import { usersRef } from "../../firebaseConfig";
+import ChatList from "../../../components/ChatList";
+import Loading from "../../../components/Loading";
+import { usersRef } from "../../../firebaseConfig";
 import { getDocs, query, where } from "firebase/firestore";
+import {printDatabase} from "../../../utils/printDB"
 
 export default function Home() {
   const { logout, user } = useAuth();
   const [users, setUsers] = useState([]);
+
+  // useEffect(() => {
+  //   printDatabase("users");
+  // }, []);
 
   useEffect(() => {
     console.log(user.uid);

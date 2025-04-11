@@ -10,16 +10,16 @@ import {
 import React, { useEffect, useRef, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import ChatRoomHeader from "../../components/ChatRoomHeader";
-import MessageList from "../../components/MessageList";
+import ChatRoomHeader from "../../../components/ChatRoomHeader";
+import MessageList from "../../../components/MessageList";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 import { Feather } from "@expo/vector-icons";
-import CustomKeyboardView from "../../components/CustomKeyboardView";
-import { useAuth } from "../../context/authContext";
-import { getRoomId } from "../../utils/common";
+import CustomKeyboardView from "../../../components/CustomKeyboardView";
+import { useAuth } from "../../../context/authContext";
+import { getRoomId } from "../../../utils/common";
 import {
   addDoc,
   collection,
@@ -30,7 +30,7 @@ import {
   setDoc,
   Timestamp,
 } from "firebase/firestore";
-import { db, rtdb } from "../../firebaseConfig";
+import { db, rtdb } from "../../../firebaseConfig";
 import {
   RTCPeerConnection,
   RTCView,
