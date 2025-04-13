@@ -3,9 +3,9 @@ import React, { useEffect, useState } from "react";
 import { useAuth } from "../../../context/authContext";
 import { StatusBar } from "expo-status-bar";
 // import { heightPercentageToDP as hp } from "react-native-responsive-screen";
-import ChatList from "../../components/ChatList";
-import Loading from "../../components/Loading";
-import { usersRef, db } from "../../firebaseConfig";
+// import ChatList from "../../components/ChatList";
+// import Loading from "../../components/Loading";
+// import { usersRef, db } from "../../firebaseConfig";
 import {
   onSnapshot,
   query,
@@ -17,10 +17,9 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
-// import ChatList from "../../../components/ChatList";
-// import Loading from "../../../components/Loading";
-import { usersRef } from "../../../firebaseConfig";
-import { getDocs, query, where } from "firebase/firestore";
+import ChatList from "../../../components/ChatList";
+import Loading from "../../../components/Loading";
+import { usersRef, db } from "../../../firebaseConfig";
 import { printDatabase } from "../../../utils/printDB";
 
 export default function Home() {

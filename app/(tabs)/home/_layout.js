@@ -7,8 +7,8 @@ export default function HomeStackLayout() {
       <Stack.Screen
         name="chat-room"
         options={{
-          headerShown: true,      // Ẩn header
-          presentation: "card",    // Hoặc "modal" nếu muốn animation dạng modal
+          headerShown: true, // Ẩn header
+          presentation: "card", // Hoặc "modal" nếu muốn animation dạng modal
         }}
       />
     </Stack>
