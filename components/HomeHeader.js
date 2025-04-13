@@ -16,17 +16,27 @@ import {
 } from "react-native-popup-menu";
 import { CustomMenuItem } from "./CustomMenuItem";
 import { AntDesign, Feather, Ionicons } from "@expo/vector-icons";
-import { useRouter } from 'expo-router';
+import { useRouter } from "expo-router";
 
 const ios = Platform.OS === "ios";
 
 export default function HomeHeader() {
   const { user, logout } = useAuth();
   const { top } = useSafeAreaInsets();
-  const handleProfile = () => {};
+  const router = useRouter();
+
+  const handleProfile = () => {
+    router.push("/profile");
+  };
+
+  const handleSearchFriends = () => {
+    router.push("/searchFriends");
+  };
+
   const handleLogout = async () => {
     await logout();
   };
+
   return (
     <View
       style={{ paddingTop: ios ? top : top + 10 }}
@@ -72,10 +82,24 @@ export default function HomeHeader() {
             />
             <Divider />
             <CustomMenuItem
+              text="Search Friends"
+              action={handleSearchFriends}
+              value={null}
+              icon={<Feather name="search" size={hp(2.5)} color="#737373" />}
+            />
+            <Divider />
+            <CustomMenuItem
               text="Sign Out"
               action={handleLogout}
               value={null}
               icon={<AntDesign name="logout" size={hp(2.5)} color="#737373" />}
+            />
+            <Divider />
+            <CustomMenuItem
+              text="Friend Requests"
+              action={() => router.push("/friendRequests")}
+              value={null}
+              icon={<Feather name="users" size={hp(2.5)} color="#737373" />}
             />
           </MenuOptions>
         </Menu>
