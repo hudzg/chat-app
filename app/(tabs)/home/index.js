@@ -1,8 +1,8 @@
 import { View, Text } from "react-native";
 import React, { useEffect, useState } from "react";
-import { useAuth } from "../../context/authContext";
+import { useAuth } from "../../../context/authContext";
 import { StatusBar } from "expo-status-bar";
-import { heightPercentageToDP as hp } from "react-native-responsive-screen";
+// import { heightPercentageToDP as hp } from "react-native-responsive-screen";
 import ChatList from "../../components/ChatList";
 import Loading from "../../components/Loading";
 import { usersRef, db } from "../../firebaseConfig";
@@ -13,11 +13,24 @@ import {
   collection,
   getDocs,
 } from "firebase/firestore";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
+// import ChatList from "../../../components/ChatList";
+// import Loading from "../../../components/Loading";
+import { usersRef } from "../../../firebaseConfig";
+import { getDocs, query, where } from "firebase/firestore";
+import { printDatabase } from "../../../utils/printDB";
 
 export default function Home() {
   const { user } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // useEffect(() => {
+  //   printDatabase("users");
+  // }, []);
 
   useEffect(() => {
     if (user?.uid) {
