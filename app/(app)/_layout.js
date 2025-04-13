@@ -8,6 +8,9 @@ export default function _layout() {
     <Stack>
       <Stack.Screen name="home" options={{ header: () => <HomeHeader /> }} />
       <Stack.Screen name="chatRoom" />
+      <Stack.Screen name="profile" />
+      <Stack.Screen name="searchFriends" />
+      <Stack.Screen name="friendRequests" />
     </Stack>
   );
 }
