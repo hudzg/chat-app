@@ -38,6 +38,12 @@
       "expo-router",
       "@config-plugins/react-native-webrtc",
       [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to let you share them with your friends."
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-icon.png",
@@ -55,9 +61,8 @@
         "origin": false
       },
       "eas": {
-        "projectId": "673f35c1-3b83-41a1-97e1-b13ed012325e"
+        "projectId": "ea70a45c-44be-4232-9af6-a5da7054e13b"
       }
-    },
-    "owner": "lalisa10"
+    }
   }
 }

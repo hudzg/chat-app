@@ -39,6 +39,14 @@ import {
   RTCSessionDescription,
 } from "react-native-webrtc";
 import { ref, onValue, set, remove, push, get } from "firebase/database";
+import * as ImagePicker from "expo-image-picker";
+import {
+  getDownloadURL,
+  ref as storageRef,
+  uploadBytesResumable,
+} from "firebase/storage";
+import { storage } from "../../../firebaseConfig";
+// import { CLOUDINARY_URL, CLOUDINARY_UPLOAD_PRESET } from "@env";
 
 const configuration = {
   iceServers: [
@@ -343,6 +351,92 @@ export default function ChatRoom() {
     }
   };
 
+  const uploadImageAsync = async (uri) => {
+    try {
+      const formData = new FormData();
+
+      // Chuyển URI thành file ảnh với metadata cần thiết
+      const filename = uri.split("/").pop();
+      const match = /\.(\w+)$/.exec(filename);
+      const type = match ? `image/${match[1]}` : "image";
+
+      formData.append("file", {
+        uri,
+        name: filename,
+        type,
+      });
+
+      formData.append(
+        "upload_preset",
+        process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET
+      );
+
+      const response = await fetch(process.env.EXPO_PUBLIC_CLOUDINARY_URL, {
+        method: "POST",
+        body: formData,
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Upload failed");
+      }
+
+      console.log("Upload response:", data);
+      return data.secure_url;
+    } catch (error) {
+      console.error("Upload error:", error);
+      throw error;
+    }
+  };
+
+  const handleSendImage = async () => {
+    try {
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert(
+          "Sorry, we need camera roll permissions to make this work!"
+        );
+        return;
+      }
+
+      const pickerResult = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
+
+      if (!pickerResult.canceled) {
+        const imageUri = pickerResult.assets[0].uri;
+
+        const downloadURL = await uploadImageAsync(imageUri);
+
+        let roomId = getRoomId(user?.userId, item?.userId);
+        const docRef = doc(db, "rooms", roomId);
+        const messageRef = collection(docRef, "messages");
+
+        await addDoc(messageRef, {
+          userId: user?.userId,
+          imageUrl: downloadURL,
+          profileUrl: user?.profileUrl,
+          senderName: user?.username,
+          createdAt: Timestamp.fromDate(new Date()),
+          type: "image",
+        });
+
+        console.log("Uploaded image and saved to Firestore!");
+      }
+    } catch (error) {
+      console.error("Error uploading image: ", error);
+      Alert.alert("Error", "Failed to upload image");
+    }
+  };
+
   const updateScrollView = () => {
     setTimeout(() => {
       scrollViewRef?.current?.scrollToEnd({ animated: true });
@@ -409,6 +503,12 @@ export default function ChatRoom() {
           </View>
           <View className="pt-2" style={{ marginBottom: hp(1.7) }}>
             <View className="flex-row justify-between items-center mx-3">
+              <TouchableOpacity
+                onPress={handleSendImage}
+                className="bg-neutral-200 p-2 mr-[1px] rounded-full"
+              >
+                <Feather name="image" size={hp(2.7)} color="#737373" />
+              </TouchableOpacity>
               <View className="flex-row justify-between bg-white border p-2 border-neutral-300 rounded-full pl-5">
                 <TextInput
                   ref={inputRef}
