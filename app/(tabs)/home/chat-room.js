@@ -351,14 +351,18 @@ export default function ChatRoom() {
     }
   };
 
-  const uploadImageAsync = async (uri) => {
+  const uploadMediaAsync = async (uri, mediaType) => {
     try {
       const formData = new FormData();
 
-      // Chuyển URI thành file ảnh với metadata cần thiết
       const filename = uri.split("/").pop();
       const match = /\.(\w+)$/.exec(filename);
-      const type = match ? `image/${match[1]}` : "image";
+      const type =
+        mediaType === "video"
+          ? "video/mp4"
+          : match
+          ? `image/${match[1]}`
+          : "image";
 
       formData.append("file", {
         uri,
@@ -371,14 +375,23 @@ export default function ChatRoom() {
         process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET
       );
 
-      const response = await fetch(process.env.EXPO_PUBLIC_CLOUDINARY_URL, {
-        method: "POST",
-        body: formData,
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      if (mediaType === "video") {
+        formData.append("resource_type", "video");
+      }
+
+      console.log(formData.get("file"));
+
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME}/${mediaType}/upload`,
+        {
+          method: "POST",
+          body: formData,
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
 
       const data = await response.json();
       if (!response.ok) {
@@ -393,7 +406,7 @@ export default function ChatRoom() {
     }
   };
 
-  const handleSendImage = async () => {
+  const handleSendMedia = async () => {
     try {
       const { status } =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -405,16 +418,18 @@ export default function ChatRoom() {
       }
 
       const pickerResult = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
         allowsEditing: true,
         aspect: [4, 3],
         quality: 1,
+        videoMaxDuration: 60,
       });
 
       if (!pickerResult.canceled) {
-        const imageUri = pickerResult.assets[0].uri;
+        const mediaUri = pickerResult.assets[0].uri;
+        const mediaType = pickerResult.assets[0].type || "image";
 
-        const downloadURL = await uploadImageAsync(imageUri);
+        const downloadURL = await uploadMediaAsync(mediaUri, mediaType);
 
         let roomId = getRoomId(user?.userId, item?.userId);
         const docRef = doc(db, "rooms", roomId);
@@ -422,18 +437,19 @@ export default function ChatRoom() {
 
         await addDoc(messageRef, {
           userId: user?.userId,
-          imageUrl: downloadURL,
+          mediaUrl: downloadURL,
+          mediaType: mediaType,
           profileUrl: user?.profileUrl,
           senderName: user?.username,
           createdAt: Timestamp.fromDate(new Date()),
-          type: "image",
+          type: mediaType,
         });
 
-        console.log("Uploaded image and saved to Firestore!");
+        console.log(`Uploaded ${mediaType} and saved to Firestore!`);
       }
     } catch (error) {
-      console.error("Error uploading image: ", error);
-      Alert.alert("Error", "Failed to upload image");
+      console.error("Error uploading media: ", error);
+      Alert.alert("Error", "Failed to upload media");
     }
   };
 
@@ -501,15 +517,23 @@ export default function ChatRoom() {
               messages={messages}
             />
           </View>
-          <View className="pt-2" style={{ marginBottom: hp(1.7) }}>
+          <View className="pt-2 px-1" style={{ marginBottom: hp(1.7) }}>
             <View className="flex-row justify-between items-center mx-3">
-              <TouchableOpacity
-                onPress={handleSendImage}
-                className="bg-neutral-200 p-2 mr-[1px] rounded-full"
-              >
-                <Feather name="image" size={hp(2.7)} color="#737373" />
-              </TouchableOpacity>
-              <View className="flex-row justify-between bg-white border p-2 border-neutral-300 rounded-full pl-5">
+              <View className="flex-row">
+                <TouchableOpacity
+                  onPress={() => handleSendMedia()}
+                  className="bg-neutral-200 p-2 mr-2 rounded-full"
+                >
+                  <Feather name="image" size={hp(2.7)} color="#737373" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => handleSendMedia()}
+                  className="bg-neutral-200 p-2 mr-2 rounded-full"
+                >
+                  <Feather name="video" size={hp(2.7)} color="#737373" />
+                </TouchableOpacity>
+              </View>
+              <View className="flex-1 flex-row justify-between bg-white border p-2 border-neutral-300 rounded-full pl-5">
                 <TextInput
                   ref={inputRef}
                   onChangeText={(value) => (textRef.current = value)}
