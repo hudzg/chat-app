@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity } from "react-native";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { Entypo, Ionicons } from "@expo/vector-icons";
 import {
   widthPercentageToDP as wp,
@@ -16,6 +16,8 @@ export default function ChatRoomHeader({
   acceptCall,
   incomingCall,
   isCaller,
+  groupName,
+  isGroup
 }) {
   return (
     <Stack.Screen
@@ -32,7 +34,7 @@ export default function ChatRoomHeader({
             </TouchableOpacity>
             <View className="flex-row items-center gap-3">
               <Image
-                source={user?.profileUrl}
+                // source={user?.profileUrl}
                 style={{ height: hp(4.5), aspectRatio: 1, borderRadius: 100 }}
                 placeholder={{ blurhash }}
               />
@@ -40,7 +42,7 @@ export default function ChatRoomHeader({
                 style={{ fontSize: hp(2.5) }}
                 className="text-neutral-700 font-medium"
               >
-                {user?.username}
+                {isGroup ? groupName : user?.username}
               </Text>
             </View>
           </View>
