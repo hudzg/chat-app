@@ -12,30 +12,97 @@ import {
   onSnapshot,
   orderBy,
   query,
+  limit,
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
+import { useRouter } from 'expo-router';
 
-export default function ChatItem({ currentUser, item, router, noBorder }) {
+export default function ChatItem({ currentUser, item, noBorder }) {
   const [lastMessage, setLastMessage] = useState(undefined);
+  const router = useRouter();
 
   const openChatRoom = () => {
-    router.push({ pathname: "/home/chat-room", params: item });
+    // router.push({ pathname: "/home/chat-room", params: item });
+    if (item.type === 'group') {
+      router.push({
+        pathname: "/home/group-chat",
+        params: item
+      });
+    } else {
+      router.push({
+        pathname: "/home/chat-room",
+        params: item
+      });
+    }
   };
 
   useEffect(() => {
-    let roomId = getRoomId(currentUser?.userId, item?.userId);
-    const docRef = doc(db, "rooms", roomId);
-    const messageRef = collection(docRef, "messages");
-    const q = query(messageRef, orderBy("createdAt", "desc"));
-    let unsub = onSnapshot(q, (snapshot) => {
-      let allMessages = snapshot.docs.map((doc) => {
-        return doc.data();
-      });
-      setLastMessage(allMessages[0] ? allMessages[0] : null);
-    });
+    if (!currentUser || !item) return;
+    let unsubscribe = null;
 
-    return unsub;
-  }, []);
+    const setupListener = async () => {
+      try {
+        if (item.type === 'group') {
+          const messageRef = collection(db, "groups", item.id, "messages");
+          const q = query(messageRef, orderBy("createdAt", "desc"), limit(1));
+          unsubscribe = onSnapshot(q, (snapshot) => {
+            if (!snapshot.empty) {
+              const messages = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+              }));
+              setLastMessage(messages[0]);
+            } else {
+              setLastMessage(null);
+            }
+          });
+        } else {
+          const roomId = getRoomId(currentUser?.userId, item?.userId);
+          const docRef = doc(db, "rooms", roomId);
+          const messageRef = collection(docRef, "messages");
+          const q = query(messageRef, orderBy("createdAt", "desc"), limit(1));
+          
+          unsubscribe = onSnapshot(q, (snapshot) => {
+            if (!snapshot.empty) {
+              const messages = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+              }));
+              setLastMessage(messages[0]);
+            } else {
+              setLastMessage(null);
+            }
+          });
+        }
+      } catch (error) {
+        console.error("Error setting up listener:", error);
+        setLastMessage(null);
+      }
+    };
+
+    setupListener();
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, [currentUser?.userId, item]);
+
+  // useEffect(() => {
+  //   let roomId = getRoomId(currentUser?.userId, item?.userId);
+  //   const docRef = doc(db, "rooms", roomId);
+  //   const messageRef = collection(docRef, "messages");
+  //   const q = query(messageRef, orderBy("createdAt", "desc"));
+  //   let unsub = onSnapshot(q, (snapshot) => {
+  //     let allMessages = snapshot.docs.map((doc) => {
+  //       return doc.data();
+  //     });
+  //     setLastMessage(allMessages[0] ? allMessages[0] : null);
+  //   });
+
+  //   return unsub;
+  // }, []);
 
   const renderTime = () => {
     if (lastMessage) {
@@ -54,6 +121,13 @@ export default function ChatItem({ currentUser, item, router, noBorder }) {
     } else {
       return "Say Hi";
     }
+  };
+
+  const getDisplayName = () => {
+    if (item.type === 'group') {
+      return item.name; // Tên group
+    }
+    return item.username; // Tên user trong chat 1-1
   };
 
   return (
@@ -81,7 +155,7 @@ export default function ChatItem({ currentUser, item, router, noBorder }) {
             style={{ fontSize: hp(1.8) }}
             className="font-semibold text-neutral-800"
           >
-            {item?.username}
+            {getDisplayName()}
           </Text>
           <Text
             style={{ fontSize: hp(1.6) }}
