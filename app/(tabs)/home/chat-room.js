@@ -329,27 +329,41 @@ export default function ChatRoom() {
   };
 
   const handleSendMessage = async () => {
-    let message = textRef.current.trim();
-    if (!message) return;
-    try {
-      let roomId = getRoomId(user?.userId, item?.userId);
-      const docRef = doc(db, "rooms", roomId);
-      const messageRef = collection(docRef, "messages");
+      let message = textRef.current.trim();
+      if (!message) return;
+      try {
+        let roomId = getRoomId(user?.userId, item?.userId);
+        const docRef = doc(db, "rooms", roomId);
+        const messageRef = collection(docRef, "messages");
 
-      textRef.current = "";
-      if (inputRef) inputRef?.current?.clear();
+        textRef.current = "";
+        if (inputRef) inputRef?.current?.clear();
 
-      await addDoc(messageRef, {
-        userId: user?.userId,
-        text: message,
-        profileUrl: user?.profileUrl,
-        senderName: user?.username,
-        createdAt: Timestamp.fromDate(new Date()),
-      });
-    } catch (e) {
-      Alert.alert("Message", e.message);
-    }
-  };
+        await addDoc(messageRef, {
+          userId: user?.userId,
+          text: message,
+          profileUrl: user?.profileUrl,
+          senderName: user?.username,
+          createdAt: Timestamp.fromDate(new Date()),
+        });
+
+        // 3. Nếu đang chat với bot (item.userId === 'chatgpt-bot'), gọi API và lưu reply
+        if (item?.userId === "chatgpt-bot") {
+             // gọi OpenAI
+             const aiReply = await askChatGPT(messageText);
+             // lưu câu trả lời AI
+             await addDoc(messageRef, {
+               userId: "chatgpt-bot",
+               text: aiReply,
+               profileUrl: null,
+               senderName: "ChatGPT",
+               createdAt: Timestamp.fromDate(new Date()),
+             });
+           }
+      } catch (e) {
+        Alert.alert("Message", e.message);
+      }
+    };
 
   const uploadMediaAsync = async (uri, mediaType) => {
     try {

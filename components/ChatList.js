@@ -8,6 +8,13 @@ import { db } from '../firebaseConfig';
 export default function ChatList({ currentUser, users }) {
   const router = useRouter();
   const [groups, setGroups] = useState([]);
+  const aiUser = {
+    userId: 'chatgpt-bot',
+    username: 'Trợ lý AI',
+    profileUrl: 'https://cdn-icons-png.flaticon.com/512/4712/4712027.png', // icon AI
+    type: 'ai'
+  };
+
 
   useEffect(() => {
     if (!currentUser?.userId) return;
@@ -29,7 +36,7 @@ export default function ChatList({ currentUser, users }) {
     return () => unsubscribe();
   }, [currentUser]);
 
-  const allChats = [...groups, ...users.map(user => ({ ...user, type: 'individual' }))];
+  const allChats = [aiUser,...groups, ...users.map(user => ({ ...user, type: 'individual' }))];
 
   return (
     <View className="flex-1">
