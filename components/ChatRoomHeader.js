@@ -2,6 +2,12 @@ import { View, Text, TouchableOpacity } from "react-native";
 import { Stack, useRouter } from "expo-router";
 import { Entypo, Ionicons } from "@expo/vector-icons";
 import {
+  Menu,
+  MenuOptions,
+  MenuOption,
+  MenuTrigger,
+} from "react-native-popup-menu";
+import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
@@ -17,7 +23,11 @@ export default function ChatRoomHeader({
   incomingCall,
   isCaller,
   groupName,
-  isGroup
+  isGroup,
+  onAddMembers,
+  onViewMembers,
+  onDeleteGroup,
+  isAdmin,
 }) {
   return (
     <Stack.Screen
@@ -34,7 +44,11 @@ export default function ChatRoomHeader({
             </TouchableOpacity>
             <View className="flex-row items-center gap-3">
               <Image
-                // source={user?.profileUrl}
+                source={
+                  isGroup
+                    ? require("../assets/images/group-icon.png")
+                    : user?.profileUrl
+                }
                 style={{ height: hp(4.5), aspectRatio: 1, borderRadius: 100 }}
                 placeholder={{ blurhash }}
               />
@@ -53,6 +67,57 @@ export default function ChatRoomHeader({
             <TouchableOpacity onPress={startCall}>
               <Ionicons name="videocam" size={hp(2.8)} color="#737373" />
             </TouchableOpacity>
+
+            {isGroup && isAdmin  && (
+              <Menu>
+                <MenuTrigger>
+                  <Ionicons
+                    name="ellipsis-vertical"
+                    size={hp(2.8)}
+                    color="#737373"
+                  />
+                </MenuTrigger>
+                <MenuOptions
+                  optionsContainerStyle={{
+                    borderRadius: 12,
+                    marginTop: 30,
+                    width: 200,
+                    padding: 5,
+                  }}
+                >
+                  <MenuOption onSelect={onAddMembers}>
+                    <View className="flex-row items-center gap-2 p-2">
+                      <Ionicons
+                        name="person-add"
+                        size={hp(2.2)}
+                        color="#737373"
+                      />
+                      <Text style={{ fontSize: hp(1.8) }}>Add members</Text>
+                    </View>
+                  </MenuOption>
+
+                  <MenuOption onSelect={onViewMembers}>
+                    <View className="flex-row items-center gap-2 p-2">
+                      <Ionicons
+                        name="people"
+                        size={hp(2.2)}
+                        color="#737373"
+                      />
+                      <Text style={{ fontSize: hp(1.8) }}>Members</Text>
+                    </View>
+                  </MenuOption>
+
+                  <MenuOption onSelect={onDeleteGroup}>
+                    <View className="flex-row items-center gap-2 p-2">
+                      <Ionicons name="trash" size={hp(2.2)} color="#ff4444" />
+                      <Text style={{ fontSize: hp(1.8), color: "#ff4444" }}>
+                        Delete group
+                      </Text>
+                    </View>
+                  </MenuOption>
+                </MenuOptions>
+              </Menu>
+            )}
           </View>
         ),
       }}
