@@ -10,11 +10,11 @@ import {
 } from "react-native";
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
-import { useAuth } from "../../context/authContext";
-import { createGroup } from "../../components/GroupActions";
+import { useAuth } from "../context/authContext";
+import { createGroup } from "../components/GroupActions";
 import { useRouter } from "expo-router";
 import { collection, query, where, getDocs } from "firebase/firestore";
-import { db } from "../../firebaseConfig";
+import { db } from "../firebaseConfig";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,

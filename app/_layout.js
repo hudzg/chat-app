@@ -1,6 +1,6 @@
 import { View, Text } from "react-native";
 import React, { useEffect } from "react";
-import { Slot, useRouter, useSegments } from "expo-router";
+import { Stack, Slot, useRouter, useSegments } from "expo-router";
 import { AuthContextProvider, useAuth } from "../context/authContext";
 import { MenuProvider } from "react-native-popup-menu";
 
@@ -19,7 +19,41 @@ const MainLayout = () => {
     }
   }, [isAuthenticated]);
 
-  return <Slot />;
+  return (
+    <Stack>
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen 
+        name="viewMembers" 
+        options={{ 
+          title: "Members",
+          headerShown: true,
+          headerBackTitle: "Back",
+          presentation: "modal"
+        }} 
+      />
+      <Stack.Screen 
+        name="addMembers" 
+        options={{ 
+          title: "Add Members",
+          headerShown: true,
+          headerBackTitle: "Back",
+          presentation: "modal"
+        }} 
+      />
+      <Stack.Screen 
+        name="signIn" 
+        options={{ 
+          headerShown: false 
+        }} 
+      />
+      <Stack.Screen 
+        name="signUp" 
+        options={{ 
+          headerShown: false 
+        }} 
+      />
+    </Stack>
+  );
 };
 
 export default function RootLayout() {

@@ -10,6 +10,10 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!user?.userId) {
+      router.replace("/signIn");
+      return;
+    }
     const fetchUserData = async () => {
       try {
         if (user?.userId) {

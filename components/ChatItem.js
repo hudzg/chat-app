@@ -16,6 +16,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { useRouter } from 'expo-router';
+import { get } from "firebase/database";
 
 export default function ChatItem({ currentUser, item, noBorder }) {
   const [lastMessage, setLastMessage] = useState(undefined);
@@ -130,6 +131,14 @@ export default function ChatItem({ currentUser, item, noBorder }) {
     return item.username; // Tên user trong chat 1-1
   };
 
+  const getDisPlayImage = () => {
+    if(item.type === 'group') {
+      return require("../assets/images/group-icon.png"); 
+    } else {
+      return item?.profileUrl;
+    }
+  }
+
   return (
     <TouchableOpacity
       onPress={openChatRoom}
@@ -137,15 +146,11 @@ export default function ChatItem({ currentUser, item, noBorder }) {
         noBorder ? "" : "border-b border-b-neutral-200"
       }`}
     >
-      {/* <Image
-        source={{ uri: item?.profileUrl }}
-        style={{ height: hp(6), width: hp(6) }}
-        className="rounded-full"
-      /> */}
+
 
       <Image
         style={{ height: hp(6), width: hp(6), borderRadius: 100 }}
-        source={item?.profileUrl}
+        source={getDisPlayImage()}
         placeholder={{ blurhash }}
         transition={500}
       />
