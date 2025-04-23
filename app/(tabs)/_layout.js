@@ -12,6 +12,7 @@ export default function _layout() {
   const colorScheme = useColorScheme();
   const segments = useSegments();
   const isChatScreen = segments.includes("chat-room");
+  const isGroupChatScreen = segments.includes("group-chat");
   const { top } = useSafeAreaInsets;
 
   console.log(isChatScreen);
@@ -20,7 +21,7 @@ export default function _layout() {
     <Tabs
       screenOptions={{
         tabBarStyle: {
-          display: isChatScreen ? "none" : "flex",
+          display: isChatScreen || isGroupChatScreen ? "none" : "flex",
         },
         tabBarActiveTintColor: Colors[colorScheme ?? "dark"].tint,
         tabBarInactiveTintColor: Colors[colorScheme ?? "light"].tint,
