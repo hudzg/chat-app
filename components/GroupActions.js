@@ -1,4 +1,4 @@
-import { db } from "../firebaseConfig";
+import { db, auth } from "../firebaseConfig";
 import { 
   collection, 
   addDoc,
@@ -10,6 +10,8 @@ import {
   where, 
   getDocs, 
   updateDoc,
+  deleteDoc,
+  arrayUnion,
 } from "firebase/firestore";
 
 export const createGroup = async (groupData) => {
@@ -114,6 +116,37 @@ export const sendGroupMessage = async (groupId, messageData) => {
     }
   } catch (error) {
     console.error("Error sending group message:", error);
+    throw error;
+  }
+};
+
+
+export const deleteOneMessage = async (groupId, messageId, deleteForEveryone = false) => {
+  try {
+    const messageRef = doc(db, "groups", groupId, "messages", messageId);
+    const messageDoc = await getDoc(messageRef);
+
+    const messageData = messageDoc.data();
+    if (!messageData) {
+      throw new Error("Message not found");
+    }
+    
+    if (deleteForEveryone) {
+      await updateDoc(messageRef, {
+        text: "This message was deleted",
+        type: "deleted",
+        deletedBy: auth.currentUser.uid,
+        isDeletedForEveryone: true
+      });
+    } else {
+      await updateDoc(messageRef, {
+        deletedFor: messageData.deletedFor 
+          ? arrayUnion(auth.currentUser.uid)
+          : [auth.currentUser.uid]
+      });
+    }
+  } catch (error) {
+    console.error("Error deleting message:", error);
     throw error;
   }
 };
