@@ -26,7 +26,8 @@ export default function ChatRoomHeader({
   isGroup,
   onAddMembers,
   onViewMembers,
-  onDeleteGroup,
+  onDeleteChat,
+  onLeaveGroup,
   isAdmin,
 }) {
   return (
@@ -68,56 +69,69 @@ export default function ChatRoomHeader({
               <Ionicons name="videocam" size={hp(2.8)} color="#737373" />
             </TouchableOpacity>
 
-            {isGroup && isAdmin  && (
-              <Menu>
-                <MenuTrigger>
-                  <Ionicons
-                    name="ellipsis-vertical"
-                    size={hp(2.8)}
-                    color="#737373"
-                  />
-                </MenuTrigger>
-                <MenuOptions
-                  optionsContainerStyle={{
-                    borderRadius: 12,
-                    marginTop: 30,
-                    width: 200,
-                    padding: 5,
-                  }}
-                >
-                  <MenuOption onSelect={onAddMembers}>
-                    <View className="flex-row items-center gap-2 p-2">
-                      <Ionicons
-                        name="person-add"
-                        size={hp(2.2)}
-                        color="#737373"
-                      />
-                      <Text style={{ fontSize: hp(1.8) }}>Add members</Text>
-                    </View>
-                  </MenuOption>
+            <Menu>
+              <MenuTrigger>
+                <Ionicons
+                  name="ellipsis-vertical"
+                  size={hp(2.8)}
+                  color="#737373"
+                />
+              </MenuTrigger>
+              <MenuOptions
+                optionsContainerStyle={{
+                  borderRadius: 12,
+                  marginTop: 30,
+                  width: 200,
+                  padding: 5,
+                }}
+              >
+                {isGroup && isAdmin && (
+                  <View>
+                    <MenuOption onSelect={onAddMembers}>
+                      <View className="flex-row items-center gap-2 p-2">
+                        <Ionicons
+                          name="person-add"
+                          size={hp(2.2)}
+                          color="#737373"
+                        />
+                        <Text style={{ fontSize: hp(1.8) }}>Add members</Text>
+                      </View>
+                    </MenuOption>
 
-                  <MenuOption onSelect={onViewMembers}>
-                    <View className="flex-row items-center gap-2 p-2">
-                      <Ionicons
-                        name="people"
-                        size={hp(2.2)}
-                        color="#737373"
-                      />
-                      <Text style={{ fontSize: hp(1.8) }}>Members</Text>
-                    </View>
-                  </MenuOption>
-
-                  <MenuOption onSelect={onDeleteGroup}>
-                    <View className="flex-row items-center gap-2 p-2">
-                      <Ionicons name="trash" size={hp(2.2)} color="#ff4444" />
-                      <Text style={{ fontSize: hp(1.8), color: "#ff4444" }}>
-                        Delete group
-                      </Text>
-                    </View>
-                  </MenuOption>
-                </MenuOptions>
-              </Menu>
-            )}
+                    <MenuOption onSelect={onViewMembers}>
+                      <View className="flex-row items-center gap-2 p-2">
+                        <Ionicons
+                          name="people"
+                          size={hp(2.2)}
+                          color="#737373"
+                        />
+                        <Text style={{ fontSize: hp(1.8) }}>Members</Text>
+                      </View>
+                    </MenuOption>
+                  </View>
+                )}
+                {isGroup && (
+                  <View>
+                    <MenuOption onSelect={onDeleteChat}>
+                      <View className="flex-row items-center gap-2 p-2">
+                        <Ionicons name="trash-outline" size={hp(2.2)} color="#ff4444" />
+                        <Text style={{ fontSize: hp(1.8), color: "#ff4444" }}>
+                          Delete Chat
+                        </Text>
+                      </View>
+                    </MenuOption>
+                    <MenuOption onSelect={onLeaveGroup}>
+                      <View className="flex-row items-center gap-2 p-2">
+                        <Ionicons name="exit-outline" size={hp(2.2)} color="#ff4444" />
+                        <Text style={{ fontSize: hp(1.8), color: "#ff4444" }}>
+                          Leave Group
+                        </Text>
+                      </View>
+                    </MenuOption>
+                  </View>
+                )}
+              </MenuOptions>
+            </Menu>
           </View>
         ),
       }}

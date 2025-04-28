@@ -121,11 +121,46 @@ export default function _layout() {
           title: "Profile",
           tabBarIcon: ({ color, focused, size }) => (
             <Ionicons
-              name={focused ? "settings" : "settings-outline"}
+              name={focused ? "person" : "person-outline"}
               color={color}
               size={24}
             />
           ),
+        }}
+      />
+      {/* ẩn khỏi thanh điều hướng bên dưới */}
+      <Tabs.Screen
+        name="searchFriends"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="friendRequests"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="createGroup"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="addMembers"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="viewMembers"
+        options={{
+          href: null,
         }}
       />
     </Tabs>

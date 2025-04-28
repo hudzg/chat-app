@@ -29,7 +29,20 @@ export default function ChatList({ currentUser, users }) {
         ...doc.data(),
         id: doc.id,
         type: 'group'
-      }));
+      }))
+      .filter(group => {
+        if (!group.deletedFor?.includes(currentUser.userId)) {
+          return true;
+        }
+
+        const deletedAt = group.deletedAt?.[currentUser.userId];
+        const lastMessageTime = group.lastMessage?.createdAt || 0;
+        // console.log('deletedAt:', deletedAt, 'lastMessageTime:', lastMessageTime);
+
+        if (!deletedAt) return true;
+
+        return lastMessageTime > deletedAt;
+      });
       setGroups(groupList);
     });
 

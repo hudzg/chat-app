@@ -100,17 +100,17 @@ export default function HomeHeader() {
             />
             <Divider />
             <CustomMenuItem
-              text="Sign Out"
-              action={handleLogout}
-              value={null}
-              icon={<AntDesign name="logout" size={hp(2.5)} color="#737373" />}
-            />
-            <Divider />
-            <CustomMenuItem
               text="Friend Requests"
               action={() => router.push("/friendRequests")}
               value={null}
               icon={<Feather name="user-plus" size={hp(2.5)} color="#737373" />}
+            />
+            <Divider />
+            <CustomMenuItem
+              text="Sign Out"
+              action={handleLogout}
+              value={null}
+              icon={<AntDesign name="logout" size={hp(2.5)} color="#737373" />}
             />
           </MenuOptions>
         </Menu>

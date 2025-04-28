@@ -10,9 +10,9 @@ import {
   doc,
   getDoc,
 } from "firebase/firestore";
-import { db } from "../firebaseConfig";
-import { useAuth } from "../context/authContext";
-import { addMembersToGroup } from "../components/GroupActions";
+import { db } from "../../firebaseConfig";
+import { useAuth } from "../../context/authContext";
+import { addMembersToGroup } from "../../components/GroupActions";
 import { Ionicons } from "@expo/vector-icons";
 import { heightPercentageToDP as hp } from "react-native-responsive-screen";
 

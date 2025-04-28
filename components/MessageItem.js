@@ -112,16 +112,16 @@ export default function MessageItem({
                 padding: 5,
               }}
             >
-              <MenuOption >
-                <View className="flex-row items-center gap-2 p-2">
+              {/* <MenuOption > */}
+                {/* <View className="flex-row items-center gap-2 p-2">
                   <Ionicons
                     name="arrow-undo-outline"
                     size={hp(2.2)}
                     color="#737373"
                   />
                   <Text style={{ fontSize: hp(1.8) }}>Reply</Text>
-                </View>
-              </MenuOption>
+                </View> */}
+              {/* </MenuOption>
               <MenuOption >
                 <View className="flex-row items-center gap-2 p-2">
                   <Ionicons
@@ -130,8 +130,8 @@ export default function MessageItem({
                     color="#737373"
                   />
                   <Text style={{ fontSize: hp(1.8) }}>Forward</Text>
-                </View>
-              </MenuOption>
+                </View> */}
+              {/* </MenuOption> */}
               <MenuOption onSelect={() => onDeleteMessage(message.id, false)}>
                 <View className="flex-row items-center gap-2 p-2">
                   <Ionicons
