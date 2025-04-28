@@ -24,34 +24,69 @@ export const createGroup = async (groupData) => {
       lastMessage: null
     };
     const docRef = await addDoc(groupRef, newGroup);
+    await updateDoc(docRef, {
+      groupId: docRef.id
+    });
+
     return { id: docRef.id, ...newGroup };
   } catch (error) {
     console.error("Error creating group:", error);
-    throw error;
   }
 };
 
-
-export const deleteGroup = async (groupId) => {
+// Delete all messages for me
+export const deleteChat = async (groupId) => {
   try {
-    // Delete all messages 
+     
     const messagesRef = collection(db, "groups", groupId, "messages");
     const messagesSnapshot = await getDocs(messagesRef);
     const batch = writeBatch(db);
     
     messagesSnapshot.docs.forEach(doc => {
-      batch.delete(doc.ref);
+      const messageData = doc.data();
+      batch.update(doc.ref, {
+        deletedFor: messageData.deletedFor 
+          ? arrayUnion(auth.currentUser.uid)
+          : [auth.currentUser.uid]
+      });
+    });
+    
+    const groupRef = doc(db, "groups", groupId);
+    batch.update(groupRef, {
+      deletedFor: arrayUnion(auth.currentUser.uid),
+      [`deletedAt.${auth.currentUser.uid}`]: Timestamp.now()
     });
 
-    // Delete the group document
-    batch.delete(doc(db, "groups", groupId));
-    
     await batch.commit();
   } catch (error) {
     console.error("Error deleting group:", error);
-    throw error;
   }
 };
+
+export const leaveGroup = async (groupId, userId) => {
+  try {
+    const groupRef = doc(db, "groups", groupId);
+    const groupDoc = await getDoc(groupRef);
+    
+    if (groupDoc.exists()) {
+      const currentMembers = groupDoc.data().members;
+      const updatedMembers = currentMembers.filter(memberId => memberId !== userId);
+      
+      const updateData = {
+        members: updatedMembers
+      };
+
+      if(groupDoc.data().admin === userId && updatedMembers.length > 0) {
+        updateData.admin = updatedMembers[0];
+      }
+      await updateDoc(groupRef, updateData);
+
+    }
+
+  } catch (error) {
+    console.error("Error leaving group:", error);
+  }
+}
 
 export const addMembersToGroup = async (groupId, newMembers) => {
   try {
@@ -68,7 +103,6 @@ export const addMembersToGroup = async (groupId, newMembers) => {
     }
   } catch (error) {
     console.error("Error adding members:", error);
-    throw error;
   }
 };
 
@@ -90,7 +124,6 @@ export const removeMembersFromGroup = async (groupId, membersToRemove) => {
     }
   } catch (error) {
     console.error("Error removing members:", error);
-    throw error;
   }
 };
 
@@ -105,18 +138,19 @@ export const sendGroupMessage = async (groupId, messageData) => {
     
     // Update last message in group
     const groupRef = collection(db, "groups");
-    const q = query(groupRef, where("id", "==", groupId));
+    const q = query(groupRef, where("groupId", "==", groupId));
     const querySnapshot = await getDocs(q);
     
     if (!querySnapshot.empty) {
       const groupDoc = querySnapshot.docs[0];
       await updateDoc(groupDoc.ref, {
-        lastMessage: message
+        lastMessage: {
+          ...message
+        }
       });
     }
   } catch (error) {
     console.error("Error sending group message:", error);
-    throw error;
   }
 };
 
@@ -147,6 +181,5 @@ export const deleteOneMessage = async (groupId, messageId, deleteForEveryone = f
     }
   } catch (error) {
     console.error("Error deleting message:", error);
-    throw error;
   }
 };

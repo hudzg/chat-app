@@ -15,8 +15,9 @@ import ChatRoomHeader from "../../../components/ChatRoomHeader";
 import CustomKeyboardView from "../../../components/CustomKeyboardView";
 import {
   sendGroupMessage,
-  deleteGroup,
+  deleteChat,
   deleteOneMessage,
+  leaveGroup,
 } from "../../../components/GroupActions";
 import { Feather } from "@expo/vector-icons";
 import {
@@ -71,6 +72,7 @@ export default function GroupChat() {
   const handleSendMessage = async () => {
     const message = textRef.current.trim();
     if (!message) return;
+    // console.log("group id: ", item.id);
 
     try {
       await sendGroupMessage(item.id, {
@@ -85,7 +87,6 @@ export default function GroupChat() {
     } catch (error) {
       Alert.alert("Error", error.message);
       console.error("Error sending message:", error);
-      throw error;
     }
   };
 
@@ -109,8 +110,8 @@ export default function GroupChat() {
     });
   };
 
-  const handleDeleteGroup = () => {
-    Alert.alert("Delete group", "Are you sure you want to delete this group?", [
+  const handleDeleteChat = () => {
+    Alert.alert("Delete chat", "Are you sure you want to delete this chat?", [
       {
         text: "Cancel",
         style: "cancel",
@@ -120,22 +121,52 @@ export default function GroupChat() {
         style: "destructive",
         onPress: async () => {
           try {
-            await deleteGroup(item.id);
-            Alert.alert("Success", "Group has been deleted successfully", [
+            await deleteChat(item.id);
+            Alert.alert("Success", "Chat has been deleted successfully", [
               {
                 text: "OK",
                 onPress: () => router.back(),
               },
             ]);
           } catch (error) {
-            Alert.alert("Error", "Cannot delete group");
-            console.error("Error deleting group:", error);
-            throw error;
+            Alert.alert("Error", "Cannot delete chat");
+            console.error("Error deleting chat:", error);
           }
         },
       },
     ]);
   };
+
+  const handleLeaveGroup = () => {
+    Alert.alert(
+      "Leave group",
+      "Are you sure you want to leave this group?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Leave",
+          style: "leave",
+          onPress: async () => {
+            try {
+              await leaveGroup(item.id, user.userId);
+              Alert.alert("Success", "You left the group", [
+                {
+                  text: "OK",
+                  onPress: () => router.back(),
+                },
+              ]);
+            } catch (error) {
+              Alert.alert("Error", "Cannot leave group");
+              console.error("Error leaving group:", error);
+            }
+          },
+        },
+      ]
+    );
+  }
 
   const handleDeleteOneMessage = async (
     messageId,
@@ -159,7 +190,6 @@ export default function GroupChat() {
               await deleteOneMessage(item.id, messageId, deleteForEveryone);
             } catch (error) {
               Alert.alert("Error", "Cannot delete message");
-              throw error;
             }
           },
         },
@@ -178,7 +208,8 @@ export default function GroupChat() {
           isAdmin={item.admin === user.userId}
           onAddMembers={handleAddMembers}
           onViewMembers={handleViewMembers}
-          onDeleteGroup={handleDeleteGroup}
+          onDeleteChat={handleDeleteChat}
+          onLeaveGroup={handleLeaveGroup}
         />
         <View className="flex-1 bg-neutral-100">
           <MessageList
