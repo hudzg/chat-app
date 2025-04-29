@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, FlatList, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
-import { useLocalSearchParams, router } from "expo-router";
+import { useLocalSearchParams, router, useFocusEffect } from "expo-router";
 import { Image } from "expo-image";
 import {
   collection,
@@ -23,15 +23,23 @@ export default function AddMembers() {
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchFriends();
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchFriends();
+      setSelectedUsers([]);
+    }, [])
+  );
 
   const fetchFriends = async () => {
     try {
+      setLoading(true);
       // Fetch current group members first
       const groupRef = doc(db, "groups", groupId);
       const groupDoc = await getDoc(groupRef);
+      if (!groupDoc.exists()) {
+        console.error("Group not found");
+        return;
+      }
       const currentMembers = groupDoc.data().members || [];
 
       // Fetch friends
@@ -47,21 +55,18 @@ export default function AddMembers() {
       ];
 
       // Filter out friends who are already members
-      const nonMemberFriendIds = friendIds.filter(
-        (id) => !currentMembers.includes(id)
+      const nonMemberFriendIds = Array.from(friendIds).filter(
+        id => !currentMembers.includes(id)
       );
 
-      // Only if there are friends not in the group
       if (nonMemberFriendIds.length > 0) {
-        // Get user details for filtered friends
         const usersRef = collection(db, "users");
         const userQuery = query(
           usersRef,
           where("userId", "in", nonMemberFriendIds)
         );
         const usersSnap = await getDocs(userQuery);
-
-        setFriends(usersSnap.docs.map((doc) => doc.data()));
+        setFriends(usersSnap.docs.map(doc => doc.data()));
       } else {
         setFriends([]);
       }
