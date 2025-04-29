@@ -7,7 +7,7 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native";
-import { useLocalSearchParams, router } from "expo-router";
+import { useLocalSearchParams, router, useFocusEffect } from "expo-router";
 import { Image } from "expo-image";
 import {
   collection,
@@ -34,6 +34,12 @@ export default function ViewMembers() {
   useEffect(() => {
     fetchMembers();
   }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchMembers();
+    }, [])
+  );
 
   const fetchMembers = async () => {
     try {
