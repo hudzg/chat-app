@@ -47,6 +47,7 @@ export default function _layout() {
       <Tabs.Screen
         name="stories"
         options={{
+          title: "Stories",
           headerShown: false,
           tabBarIcon: ({ color, focused, size }) => (
             <View style={{ alignItems: "center" }}>
@@ -115,10 +116,11 @@ export default function _layout() {
           ),
         }}
       />
-      <Tabs.Screen
+      {/* <Tabs.Screen
         name="profile"
         options={{
           title: "Profile",
+          headerShown: false,
           tabBarIcon: ({ color, focused, size }) => (
             <Ionicons
               name={focused ? "person" : "person-outline"}
@@ -127,15 +129,22 @@ export default function _layout() {
             />
           ),
         }}
-      />
+      /> */}
       {/* ẩn khỏi thanh điều hướng bên dưới */}
       <Tabs.Screen
         name="searchFriends"
         options={{
+          headerShown: false,
           href: null,
         }}
       />
-
+      <Tabs.Screen
+        name="profile"
+        options={{
+          headerShown: false,
+          href: null,
+        }}
+      />
       <Tabs.Screen
         name="friendRequests"
         options={{
