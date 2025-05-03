@@ -122,13 +122,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   header: {
-    padding: 16,
+    paddingHorizontal: 10,
+    paddingTop: 30,
+    paddingBottom: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
   },
   headerTitle: {
     paddingTop: 10,
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: 'bold',
   },
   storiesContainer: {
