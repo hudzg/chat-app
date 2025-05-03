@@ -6,10 +6,12 @@ import {
   Alert,
   Keyboard,
   StyleSheet,
+  StatusBar
 } from "react-native";
+import {SafeAreaView} from "react-native-safe-area-context";
 import React, { useEffect, useRef, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { StatusBar } from "expo-status-bar";
+// import { StatusBar } from "expo-status-bar";
 import ChatRoomHeader from "../../../components/ChatRoomHeader";
 import MessageList from "../../../components/MessageList";
 import {
@@ -511,9 +513,10 @@ export default function ChatRoom() {
   }
 
   return (
-    <CustomKeyboardView inChat={true}>
+    //<SafeAreaView style={styles.container}>
+      <CustomKeyboardView inChat={true}>
+      <StatusBar backgroundColor="#fff" barStyle="dark-content" />
       <View className="flex-1 bg-white">
-        <StatusBar style="dark" />
         <ChatRoomHeader
           user={item}
           router={router}
@@ -567,6 +570,8 @@ export default function ChatRoom() {
         </View>
       </View>
     </CustomKeyboardView>
+    //</SafeAreaView>
+    
   );
 }
 
