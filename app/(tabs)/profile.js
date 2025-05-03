@@ -56,7 +56,7 @@ export default function Profile() {
     <View style={styles.container}>
       <Image source={{ uri: userData.profileUrl }} style={styles.avatar} />
       <Text style={styles.username}>{userData.username}</Text>
-      <Text style={styles.email}>{user.email}</Text>
+      {/* <Text style={styles.email}>{user.email}</Text> */}
     </View>
   );
 }
