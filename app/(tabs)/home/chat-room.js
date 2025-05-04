@@ -48,6 +48,7 @@ import {
   uploadBytesResumable,
 } from "firebase/storage";
 import { storage } from "../../../firebaseConfig";
+import { askChatGPT } from "../../../utils/openAIService.js";
 // import { CLOUDINARY_URL, CLOUDINARY_UPLOAD_PRESET } from "@env";
 
 const configuration = {
@@ -352,7 +353,7 @@ export default function ChatRoom() {
         // 3. Nếu đang chat với bot (item.userId === 'chatgpt-bot'), gọi API và lưu reply
         if (item?.userId === "chatgpt-bot") {
              // gọi OpenAI
-             const aiReply = await askChatGPT(messageText);
+             const aiReply = await askChatGPT(message);
              // lưu câu trả lời AI
              await addDoc(messageRef, {
                userId: "chatgpt-bot",
