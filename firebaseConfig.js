@@ -6,12 +6,14 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getFirestore, collection } from "firebase/firestore";
 import { getDatabase } from "firebase/database";
 import { getStorage } from "firebase/storage";
+// import { getMessaging, getToken } from "firebase/messaging";
+// import { getMessaging, getToken } from "@react-native-firebase/messaging";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: "AIzaSyA6p_exHQMQ3w_XqLjO_KcjwHLDZAu0vDU",
   authDomain: "chat-app-ec5a7.firebaseapp.com",
   projectId: "chat-app-ec5a7",
@@ -25,7 +27,7 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+// const analytics = getAnalytics(app);
 
 export const auth = initializeAuth(app, {
   persistence: getReactNativePersistence(AsyncStorage),
@@ -33,7 +35,9 @@ export const auth = initializeAuth(app, {
 
 export const db = getFirestore(app);
 export const rtdb = getDatabase(app);
-const storage = getStorage(app);
+// const storage = getStorage(app);
 
 export const usersRef = collection(db, "users");
 export const roomsRef = collection(db, "rooms");
+
+// export const messaging = getMessaging();

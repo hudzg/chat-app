@@ -11,6 +11,7 @@ export default function HomeStackLayout() {
           presentation: "card", // Hoặc "modal" nếu muốn animation dạng modal
         }}
       />
+      <Stack.Screen name="call-screen" options={{ headerShown: false }} />
     </Stack>
   );
 }
