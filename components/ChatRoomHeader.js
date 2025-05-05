@@ -15,7 +15,19 @@ import { Image } from "expo-image";
 import { blurhash } from "../utils/common";
 import React from "react";
 
-export default function ChatRoomHeader({ user, router, startCall }) {
+export default function ChatRoomHeader({
+  user,
+  router,
+  startCall,
+  isCaller,
+  groupName,
+  isGroup,
+  onAddMembers,
+  onViewMembers,
+  onDeleteChat,
+  onLeaveGroup,
+  isAdmin,
+}) {
   return (
     <Stack.Screen
       options={{
@@ -100,7 +112,11 @@ export default function ChatRoomHeader({ user, router, startCall }) {
                   <View>
                     <MenuOption onSelect={onDeleteChat}>
                       <View className="flex-row items-center gap-2 p-2">
-                        <Ionicons name="trash-outline" size={hp(2.2)} color="#ff4444" />
+                        <Ionicons
+                          name="trash-outline"
+                          size={hp(2.2)}
+                          color="#ff4444"
+                        />
                         <Text style={{ fontSize: hp(1.8), color: "#ff4444" }}>
                           Delete Chat
                         </Text>
@@ -108,7 +124,11 @@ export default function ChatRoomHeader({ user, router, startCall }) {
                     </MenuOption>
                     <MenuOption onSelect={onLeaveGroup}>
                       <View className="flex-row items-center gap-2 p-2">
-                        <Ionicons name="exit-outline" size={hp(2.2)} color="#ff4444" />
+                        <Ionicons
+                          name="exit-outline"
+                          size={hp(2.2)}
+                          color="#ff4444"
+                        />
                         <Text style={{ fontSize: hp(1.8), color: "#ff4444" }}>
                           Leave Group
                         </Text>
