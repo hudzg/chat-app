@@ -1,4 +1,4 @@
-import { StyleSheet, View, Text, Image } from "react-native";
+import { StyleSheet, View, Text, Image, StatusBar } from "react-native";
 import React from "react";
 import { Tabs } from "expo-router";
 import HomeHeader from "../../components/HomeHeader";
@@ -6,21 +6,22 @@ import { useColorScheme } from "../../hooks/useColorScheme";
 import { Colors } from "../../constants/Colors";
 import { Ionicons } from "@expo/vector-icons";
 import { useSegments } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSafeAreaInsets, SafeAreaView } from "react-native-safe-area-context";
 
 export default function _layout() {
   const colorScheme = useColorScheme();
   const segments = useSegments();
   const isChatScreen = segments.includes("chat-room");
+  const isGroupChatScreen = segments.includes("group-chat");
   const { top } = useSafeAreaInsets;
-
-  console.log(isChatScreen);
+  const insets = useSafeAreaInsets();
+  // console.log(isChatScreen);
 
   return (
     <Tabs
       screenOptions={{
         tabBarStyle: {
-          display: isChatScreen ? "none" : "flex",
+          display: isChatScreen || isGroupChatScreen ? "none" : "flex",
         },
         tabBarActiveTintColor: Colors[colorScheme ?? "dark"].tint,
         tabBarInactiveTintColor: Colors[colorScheme ?? "light"].tint,
@@ -32,7 +33,7 @@ export default function _layout() {
         options={{
           title: "Home",
           header: () => {
-            return isChatScreen ? <HomeHeader /> : <HomeHeader />; // Co the bo HomeHeader cho chat-room
+            return isChatScreen ? null : <HomeHeader />; // Co the bo HomeHeader cho chat-room
           },
           tabBarIcon: ({ color, focused, size }) => (
             <Ionicons
@@ -46,7 +47,8 @@ export default function _layout() {
       <Tabs.Screen
         name="stories"
         options={{
-          title: "Story",
+          title: "Stories",
+          headerShown: false,
           tabBarIcon: ({ color, focused, size }) => (
             <View style={{ alignItems: "center" }}>
               <Image
@@ -114,19 +116,77 @@ export default function _layout() {
           ),
         }}
       />
-      <Tabs.Screen
+      {/* <Tabs.Screen
         name="profile"
         options={{
           title: "Profile",
+          headerShown: false,
           tabBarIcon: ({ color, focused, size }) => (
             <Ionicons
-              name={focused ? "settings" : "settings-outline"}
+              name={focused ? "person" : "person-outline"}
               color={color}
               size={24}
             />
           ),
         }}
+      /> */}
+      {/* ẩn khỏi thanh điều hướng bên dưới */}
+      <Tabs.Screen
+        name="searchFriends"
+        options={{
+          headerShown: false,
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          headerShown: false,
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="friendRequests"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="createGroup"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="addMembers"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="viewMembers"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="viewStory"
+        options={{
+          href: null,
+          headerShown: false,
+          tabBarStyle: { display: 'none' }
+        }}
       />
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  headerStyle: {
+    
+  }
+});

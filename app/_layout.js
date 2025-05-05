@@ -1,6 +1,6 @@
 import { View, Text, Alert } from "react-native";
 import React, { useEffect } from "react";
-import { Slot, useRouter, useSegments } from "expo-router";
+import { Slot, useRouter, useSegments, usePathname } from "expo-router";
 import { AuthContextProvider, useAuth } from "../context/authContext";
 import { MenuProvider } from "react-native-popup-menu";
 import { CallProvider } from "../context/callContext";
@@ -17,17 +17,19 @@ import { NativeModules } from "react-native";
 const { CallModule } = NativeModules;
 import { doc, getDoc, setDoc, arrayUnion } from "firebase/firestore";
 import { db } from "../firebaseConfig";
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 const MainLayout = () => {
   const { isAuthenticated, user } = useAuth();
   const segments = useSegments();
   const router = useRouter();
+  const pathName = usePathname();
 
   useEffect(() => {
     if (typeof isAuthenticated == "undefined") return;
-    const inApp = segments[0] == "(tabs)";
+    const   inApp = segments[0] == "(tabs)";
     if (isAuthenticated && !inApp) {
-      router.replace("home");
+      router.replace('/(tabs)/home');
     } else if (isAuthenticated == false) {
       router.replace("signIn");
     }
@@ -130,12 +132,14 @@ const MainLayout = () => {
 
 export default function RootLayout() {
   return (
-    <MenuProvider>
-      <AuthContextProvider>
-        <CallProvider>
-          <MainLayout />
-        </CallProvider>
-      </AuthContextProvider>
-    </MenuProvider>
+    <SafeAreaProvider>
+      <MenuProvider>
+        <AuthContextProvider>
+          <CallProvider>
+            <MainLayout />
+          </CallProvider>
+        </AuthContextProvider>
+      </MenuProvider>
+    </SafeAreaProvider>
   );
 }

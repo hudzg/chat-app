@@ -33,6 +33,10 @@ export default function HomeHeader() {
     router.push("/searchFriends");
   };
 
+  const handleCreateGroup = () => {
+    router.push("/createGroup");
+  }
+
   const handleLogout = async () => {
     await logout();
   };
@@ -89,17 +93,24 @@ export default function HomeHeader() {
             />
             <Divider />
             <CustomMenuItem
-              text="Sign Out"
-              action={handleLogout}
+              text="Create Group"
+              action={handleCreateGroup}
               value={null}
-              icon={<AntDesign name="logout" size={hp(2.5)} color="#737373" />}
+              icon={<Feather name="users" size={hp(2.5)} color="#737373" />}
             />
             <Divider />
             <CustomMenuItem
               text="Friend Requests"
               action={() => router.push("/friendRequests")}
               value={null}
-              icon={<Feather name="users" size={hp(2.5)} color="#737373" />}
+              icon={<Feather name="user-plus" size={hp(2.5)} color="#737373" />}
+            />
+            <Divider />
+            <CustomMenuItem
+              text="Sign Out"
+              action={handleLogout}
+              value={null}
+              icon={<AntDesign name="logout" size={hp(2.5)} color="#737373" />}
             />
           </MenuOptions>
         </Menu>

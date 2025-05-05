@@ -6,10 +6,12 @@ import {
   Alert,
   Keyboard,
   StyleSheet,
+  StatusBar
 } from "react-native";
+import {SafeAreaView} from "react-native-safe-area-context";
 import React, { useEffect, useRef, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { StatusBar } from "expo-status-bar";
+// import { StatusBar } from "expo-status-bar";
 import ChatRoomHeader from "../../../components/ChatRoomHeader";
 import MessageList from "../../../components/MessageList";
 import {
@@ -47,6 +49,8 @@ import {
 } from "firebase/storage";
 import { storage } from "../../../firebaseConfig";
 import { useCall } from "../../../context/callContext";
+import { askChatGPT } from "../../../utils/openAIService.js";
+
 // import { CLOUDINARY_URL, CLOUDINARY_UPLOAD_PRESET } from "@env";
 
 const configuration = {
@@ -339,27 +343,41 @@ export default function ChatRoom() {
   // };
 
   const handleSendMessage = async () => {
-    let message = textRef.current.trim();
-    if (!message) return;
-    try {
-      let roomId = getRoomId(user?.userId, item?.userId);
-      const docRef = doc(db, "rooms", roomId);
-      const messageRef = collection(docRef, "messages");
+      let message = textRef.current.trim();
+      if (!message) return;
+      try {
+        let roomId = getRoomId(user?.userId, item?.userId);
+        const docRef = doc(db, "rooms", roomId);
+        const messageRef = collection(docRef, "messages");
 
-      textRef.current = "";
-      if (inputRef) inputRef?.current?.clear();
+        textRef.current = "";
+        if (inputRef) inputRef?.current?.clear();
 
-      await addDoc(messageRef, {
-        userId: user?.userId,
-        text: message,
-        profileUrl: user?.profileUrl,
-        senderName: user?.username,
-        createdAt: Timestamp.fromDate(new Date()),
-      });
-    } catch (e) {
-      Alert.alert("Message", e.message);
-    }
-  };
+        await addDoc(messageRef, {
+          userId: user?.userId,
+          text: message,
+          profileUrl: user?.profileUrl,
+          senderName: user?.username,
+          createdAt: Timestamp.fromDate(new Date()),
+        });
+
+        // 3. Nếu đang chat với bot (item.userId === 'chatgpt-bot'), gọi API và lưu reply
+        if (item?.userId === "chatgpt-bot") {
+             // gọi OpenAI
+             const aiReply = await askChatGPT(message);
+             // lưu câu trả lời AI
+             await addDoc(messageRef, {
+               userId: "chatgpt-bot",
+               text: aiReply,
+               profileUrl: null,
+               senderName: "ChatGPT",
+               createdAt: Timestamp.fromDate(new Date()),
+             });
+           }
+      } catch (e) {
+        Alert.alert("Message", e.message);
+      }
+    };
 
   const uploadMediaAsync = async (uri, mediaType) => {
     try {
@@ -507,9 +525,10 @@ export default function ChatRoom() {
   // }
 
   return (
-    <CustomKeyboardView inChat={true}>
+    //<SafeAreaView style={styles.container}>
+      <CustomKeyboardView inChat={true}>
+      <StatusBar backgroundColor="#fff" barStyle="dark-content" />
       <View className="flex-1 bg-white">
-        <StatusBar style="dark" />
         <ChatRoomHeader
           user={item}
           router={router}
@@ -563,6 +582,8 @@ export default function ChatRoom() {
         </View>
       </View>
     </CustomKeyboardView>
+    //</SafeAreaView>
+    
   );
 }
 
