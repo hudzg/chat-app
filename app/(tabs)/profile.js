@@ -16,16 +16,106 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { ref, onValue, set, remove, push, get } from "firebase/database";
+import * as ImagePicker from "expo-image-picker";
 
+
+const uploadMediaAsync = async (uri, mediaType) => {
+    try {
+      const formData = new FormData();
+
+      const filename = uri.split("/").pop();
+      const match = /\.(\w+)$/.exec(filename);
+      const type =
+        mediaType === "video"
+          ? "video/mp4"
+          : match
+          ? `image/${match[1]}`
+          : "image";
+
+      formData.append("file", {
+        uri,
+        name: filename,
+        type,
+      });
+
+      formData.append(
+        "upload_preset",
+        process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET
+      );
+
+      if (mediaType === "video") {
+        formData.append("resource_type", "video");
+      }
+
+      console.log(formData.get("file"));
+
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME}/${mediaType}/upload`,
+        {
+          method: "POST",
+          body: formData,
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Upload failed");
+      }
+
+      console.log("Upload response:", data);
+      return data.secure_url;
+    } catch (error) {
+      console.error("Upload error:", error);
+      throw error;
+    }
+  };
+  
 const ProfileScreen = () => {
   const { user } = useAuth(); // Lấy thông tin user từ context
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(false);
 
 
-  const handleEditAvatar = () => {
-    // Xử lý logic chỉnh sửa avatar
-    console.log('Edit avatar');
+  const handleEditAvatar = async () => {
+    try {
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert(
+          "Sorry, we need camera roll permissions to make this work!"
+        );
+        return;
+    }
+
+    const pickerResult = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!pickerResult.canceled) {
+      const mediaUri = pickerResult.assets[0].uri;
+      const mediaType = pickerResult.assets[0].type || "image";
+
+      const downloadURL = await uploadMediaAsync(mediaUri, mediaType);
+      
+      const userRef = doc(db, "users", user.id);
+      await updateDoc(userRef, {
+        profileUrl: downloadURL
+      })
+
+      console.log(`Uploaded ${mediaType} and saved to Firestore!`);
+    }
+  } catch (error) {
+    console.error("Error uploading media: ", error);
+    Alert.alert("Error", "Failed to upload media");
+  }
   };
 
   const handleEditBio = () => {
@@ -34,8 +124,6 @@ const ProfileScreen = () => {
   };
 
   const handleSettings = () => {
-    // Xử lý logic mở cài đặt
-    console.log('Open settings');
     router.push('(tabs)/setting');
   };
 

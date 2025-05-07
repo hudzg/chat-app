@@ -48,7 +48,9 @@ import {
   uploadBytesResumable,
 } from "firebase/storage";
 import { storage } from "../../../firebaseConfig";
+import { useCall } from "../../../context/callContext";
 import { askChatGPT } from "../../../utils/openAIService.js";
+
 // import { CLOUDINARY_URL, CLOUDINARY_UPLOAD_PRESET } from "@env";
 
 const configuration = {
@@ -122,6 +124,9 @@ export default function ChatRoom() {
   const [isCaller, setIsCaller] = useState(false);
   const [incomingCall, setIncomingCall] = useState(false);
   const unsubscribeRefs = useRef([]);
+  const { startCall } = useCall();
+
+  const generateCallId = () => `${user.userId}-${item.userId}-${Date.now()}`;
 
   useEffect(() => {
     createRoomIfNotExists();
@@ -167,169 +172,175 @@ export default function ChatRoom() {
     });
   };
 
-  const setupConnection = async (role) => {
-    try {
-      const stream = await mediaDevices.getUserMedia({
-        video: true,
-        audio: true,
-      });
-      setLocalStream(stream);
+  // const setupConnection = async (role) => {
+  //   try {
+  //     const stream = await mediaDevices.getUserMedia({
+  //       video: true,
+  //       audio: true,
+  //     });
+  //     setLocalStream(stream);
 
-      const newPC = new RTCPeerConnection(configuration);
-      stream.getTracks().forEach((track) => {
-        newPC.addTrack(track, stream);
-      });
+  //     const newPC = new RTCPeerConnection(configuration);
+  //     stream.getTracks().forEach((track) => {
+  //       newPC.addTrack(track, stream);
+  //     });
 
-      newPC.onicecandidate = (event) => {
-        if (event.candidate) {
-          const candidateRef = ref(
-            rtdb,
-            `calls/${callId}/${
-              role === "caller" ? "callerCandidates" : "calleeCandidates"
-            }`
-          );
-          push(candidateRef, event.candidate);
-          console.log(`${role} gửi ICE candidate:`, event.candidate);
-        }
-      };
+  //     newPC.onicecandidate = (event) => {
+  //       if (event.candidate) {
+  //         const candidateRef = ref(
+  //           rtdb,
+  //           `calls/${callId}/${
+  //             role === "caller" ? "callerCandidates" : "calleeCandidates"
+  //           }`
+  //         );
+  //         push(candidateRef, event.candidate);
+  //         console.log(`${role} gửi ICE candidate:`, event.candidate);
+  //       }
+  //     };
 
-      newPC.ontrack = (event) => {
-        console.log("Nhận remote stream:", event.streams[0]);
-        setRemoteStream(event.streams[0]);
-      };
+  //     newPC.ontrack = (event) => {
+  //       console.log("Nhận remote stream:", event.streams[0]);
+  //       setRemoteStream(event.streams[0]);
+  //     };
 
-      newPC.oniceconnectionstatechange = () => {
-        const state = newPC.iceConnectionState;
-        console.log(`${role} ICE Connection State:`, state);
-        if (state === "failed") {
-          console.error(`${role} Kết nối ICE thất bại! Thử khởi động lại...`);
-          newPC.restartIce(); // Khởi động lại quá trình ICE
-        }
-      };
+  //     newPC.oniceconnectionstatechange = () => {
+  //       const state = newPC.iceConnectionState;
+  //       console.log(`${role} ICE Connection State:`, state);
+  //       if (state === "failed") {
+  //         console.error(`${role} Kết nối ICE thất bại! Thử khởi động lại...`);
+  //         newPC.restartIce(); // Khởi động lại quá trình ICE
+  //       }
+  //     };
 
-      newPC.onicecandidateerror = (event) => {
-        console.error("ICE Candidate Error:", event.errorText);
-      };
+  //     newPC.onicecandidateerror = (event) => {
+  //       console.error("ICE Candidate Error:", event.errorText);
+  //     };
 
-      pc.current = newPC;
-    } catch (error) {
-      console.error("Lỗi trong setupConnection:", error.message);
-    }
+  //     pc.current = newPC;
+  //   } catch (error) {
+  //     console.error("Lỗi trong setupConnection:", error.message);
+  //   }
+  // };
+
+  // const endCall = () => {
+  //   if (pc.current) {
+  //     pc.current.getSenders().forEach((sender) => {
+  //       if (sender.track) sender.track.stop();
+  //     });
+  //     pc.current.close();
+  //     pc.current = null;
+  //   }
+
+  //   if (localStream) {
+  //     localStream.getTracks().forEach((track) => track.stop());
+  //     setLocalStream(null);
+  //   }
+
+  //   if (remoteStream) {
+  //     remoteStream.getTracks().forEach((track) => track.stop());
+  //     setRemoteStream(null);
+  //   }
+
+  //   remove(ref(rtdb, `calls/${callId}`));
+  //   setIsCaller(false);
+  //   setIncomingCall(false);
+  //   setIsCalling(false);
+
+  //   unsubscribeRefs.current.forEach((unsub) => unsub());
+  //   unsubscribeRefs.current = [];
+  // };
+
+  const handleStartCall = async () => {
+    const callId = generateCallId();
+    await startCall(callId, item);
+    router.push("/home/call-screen");
   };
 
-  const endCall = () => {
-    if (pc.current) {
-      pc.current.getSenders().forEach((sender) => {
-        if (sender.track) sender.track.stop();
-      });
-      pc.current.close();
-      pc.current = null;
-    }
+  // const startCall = async () => {
+  //   try {
+  //     setIsCaller(true);
+  //     setIsCalling(true);
+  //     await setupConnection("caller");
 
-    if (localStream) {
-      localStream.getTracks().forEach((track) => track.stop());
-      setLocalStream(null);
-    }
+  //     const offer = await pc.current.createOffer();
+  //     await pc.current.setLocalDescription(offer);
+  //     console.log("Caller gửi offer:", offer);
 
-    if (remoteStream) {
-      remoteStream.getTracks().forEach((track) => track.stop());
-      setRemoteStream(null);
-    }
+  //     await set(ref(rtdb, `calls/${callId}/offer`), offer);
 
-    remove(ref(rtdb, `calls/${callId}`));
-    setIsCaller(false);
-    setIncomingCall(false);
-    setIsCalling(false);
+  //     const answerRef = ref(rtdb, `calls/${callId}/answer`);
+  //     const unsubAnswer = onValue(answerRef, async (snapshot) => {
+  //       const answer = snapshot.val();
+  //       if (answer && pc.current && !pc.current.currentRemoteDescription) {
+  //         console.log("Caller nhận answer:", answer);
+  //         await pc.current.setRemoteDescription(
+  //           new RTCSessionDescription(answer)
+  //         );
+  //       }
+  //     });
+  //     unsubscribeRefs.current.push(unsubAnswer);
 
-    unsubscribeRefs.current.forEach((unsub) => unsub());
-    unsubscribeRefs.current = [];
-  };
+  //     const calleeCandidatesRef = ref(rtdb, `calls/${callId}/calleeCandidates`);
+  //     const unsubCalleeCandidates = onValue(calleeCandidatesRef, (snapshot) => {
+  //       snapshot.forEach((child) => {
+  //         if (pc.current) {
+  //           const candidate = new RTCIceCandidate(child.val());
+  //           pc.current
+  //             .addIceCandidate(candidate)
+  //             .catch((error) =>
+  //               console.error("Lỗi khi thêm ICE candidate cho caller:", error)
+  //             );
+  //           console.log("Caller nhận ICE candidate từ callee:", child.val());
+  //         }
+  //       });
+  //     });
+  //     unsubscribeRefs.current.push(unsubCalleeCandidates);
+  //   } catch (error) {
+  //     console.error("Lỗi trong startCall:", error.message);
+  //   }
+  // };
 
-  const startCall = async () => {
-    try {
-      setIsCaller(true);
-      setIsCalling(true);
-      await setupConnection("caller");
+  // const acceptCall = async () => {
+  //   try {
+  //     setIncomingCall(false);
+  //     setIsCalling(true);
+  //     await setupConnection("callee");
 
-      const offer = await pc.current.createOffer();
-      await pc.current.setLocalDescription(offer);
-      console.log("Caller gửi offer:", offer);
+  //     const offerSnapshot = await get(ref(rtdb, `calls/${callId}/offer`));
+  //     const offer = offerSnapshot.val();
+  //     console.log("Callee nhận offer:", offer);
 
-      await set(ref(rtdb, `calls/${callId}/offer`), offer);
+  //     await pc.current.setRemoteDescription(new RTCSessionDescription(offer));
+  //     const answer = await pc.current.createAnswer();
+  //     await pc.current.setLocalDescription(answer);
+  //     console.log("Callee gửi answer:", answer);
 
-      const answerRef = ref(rtdb, `calls/${callId}/answer`);
-      const unsubAnswer = onValue(answerRef, async (snapshot) => {
-        const answer = snapshot.val();
-        if (answer && pc.current && !pc.current.currentRemoteDescription) {
-          console.log("Caller nhận answer:", answer);
-          await pc.current.setRemoteDescription(
-            new RTCSessionDescription(answer)
-          );
-        }
-      });
-      unsubscribeRefs.current.push(unsubAnswer);
+  //     await set(ref(rtdb, `calls/${callId}/answer`), answer);
 
-      const calleeCandidatesRef = ref(rtdb, `calls/${callId}/calleeCandidates`);
-      const unsubCalleeCandidates = onValue(calleeCandidatesRef, (snapshot) => {
-        snapshot.forEach((child) => {
-          if (pc.current) {
-            const candidate = new RTCIceCandidate(child.val());
-            pc.current
-              .addIceCandidate(candidate)
-              .catch((error) =>
-                console.error("Lỗi khi thêm ICE candidate cho caller:", error)
-              );
-            console.log("Caller nhận ICE candidate từ callee:", child.val());
-          }
-        });
-      });
-      unsubscribeRefs.current.push(unsubCalleeCandidates);
-    } catch (error) {
-      console.error("Lỗi trong startCall:", error.message);
-    }
-  };
+  //     const callerCandidatesRef = ref(rtdb, `calls/${callId}/callerCandidates`);
+  //     const unsubCallerCandidates = onValue(callerCandidatesRef, (snapshot) => {
+  //       snapshot.forEach((child) => {
+  //         if (pc.current) {
+  //           const candidate = new RTCIceCandidate(child.val());
+  //           pc.current
+  //             .addIceCandidate(candidate)
+  //             .catch((error) =>
+  //               console.error("Lỗi khi thêm ICE candidate cho callee:", error)
+  //             );
+  //           console.log("Callee nhận ICE candidate từ caller:", child.val());
+  //         }
+  //       });
+  //     });
+  //     unsubscribeRefs.current.push(unsubCallerCandidates);
+  //   } catch (error) {
+  //     console.error("Lỗi trong acceptCall:", error.message);
+  //   }
+  // };
 
-  const acceptCall = async () => {
-    try {
-      setIncomingCall(false);
-      setIsCalling(true);
-      await setupConnection("callee");
-
-      const offerSnapshot = await get(ref(rtdb, `calls/${callId}/offer`));
-      const offer = offerSnapshot.val();
-      console.log("Callee nhận offer:", offer);
-
-      await pc.current.setRemoteDescription(new RTCSessionDescription(offer));
-      const answer = await pc.current.createAnswer();
-      await pc.current.setLocalDescription(answer);
-      console.log("Callee gửi answer:", answer);
-
-      await set(ref(rtdb, `calls/${callId}/answer`), answer);
-
-      const callerCandidatesRef = ref(rtdb, `calls/${callId}/callerCandidates`);
-      const unsubCallerCandidates = onValue(callerCandidatesRef, (snapshot) => {
-        snapshot.forEach((child) => {
-          if (pc.current) {
-            const candidate = new RTCIceCandidate(child.val());
-            pc.current
-              .addIceCandidate(candidate)
-              .catch((error) =>
-                console.error("Lỗi khi thêm ICE candidate cho callee:", error)
-              );
-            console.log("Callee nhận ICE candidate từ caller:", child.val());
-          }
-        });
-      });
-      unsubscribeRefs.current.push(unsubCallerCandidates);
-    } catch (error) {
-      console.error("Lỗi trong acceptCall:", error.message);
-    }
-  };
-
-  const rejectCall = () => {
-    setIncomingCall(false);
-    remove(ref(rtdb, `calls/${callId}`));
-  };
+  // const rejectCall = () => {
+  //   setIncomingCall(false);
+  //   remove(ref(rtdb, `calls/${callId}`));
+  // };
 
   const handleSendMessage = async () => {
       let message = textRef.current.trim();
@@ -476,42 +487,42 @@ export default function ChatRoom() {
     }, 100);
   };
 
-  if (incomingCall && !isCaller) {
-    return (
-      <View style={styles.incomingCallContainer}>
-        <Text style={styles.incomingCallText}>Có cuộc gọi video đến...</Text>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.acceptButton} onPress={acceptCall}>
-            <Text style={styles.buttonText}>Chấp nhận</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.rejectButton} onPress={rejectCall}>
-            <Text style={styles.buttonText}>Từ chối</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  }
+  // if (incomingCall && !isCaller) {
+  //   return (
+  //     <View style={styles.incomingCallContainer}>
+  //       <Text style={styles.incomingCallText}>Có cuộc gọi video đến...</Text>
+  //       <View style={styles.buttonContainer}>
+  //         <TouchableOpacity style={styles.acceptButton} onPress={acceptCall}>
+  //           <Text style={styles.buttonText}>Chấp nhận</Text>
+  //         </TouchableOpacity>
+  //         <TouchableOpacity style={styles.rejectButton} onPress={rejectCall}>
+  //           <Text style={styles.buttonText}>Từ chối</Text>
+  //         </TouchableOpacity>
+  //       </View>
+  //     </View>
+  //   );
+  // }
 
-  if (isCalling) {
-    return (
-      <View style={styles.fullScreenContainer}>
-        {remoteStream ? (
-          <RTCView
-            streamURL={remoteStream.toURL()}
-            style={styles.remoteVideo}
-          />
-        ) : (
-          <Text style={styles.waitingText}>Đang chờ kết nối...</Text>
-        )}
-        {localStream && (
-          <RTCView streamURL={localStream.toURL()} style={styles.localVideo} />
-        )}
-        <TouchableOpacity style={styles.endCallButton} onPress={endCall}>
-          <Text style={styles.endCallText}>Kết thúc cuộc gọi</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
+  // if (isCalling) {
+  //   return (
+  //     <View style={styles.fullScreenContainer}>
+  //       {remoteStream ? (
+  //         <RTCView
+  //           streamURL={remoteStream.toURL()}
+  //           style={styles.remoteVideo}
+  //         />
+  //       ) : (
+  //         <Text style={styles.waitingText}>Đang chờ kết nối...</Text>
+  //       )}
+  //       {localStream && (
+  //         <RTCView streamURL={localStream.toURL()} style={styles.localVideo} />
+  //       )}
+  //       <TouchableOpacity style={styles.endCallButton} onPress={endCall}>
+  //         <Text style={styles.endCallText}>Kết thúc cuộc gọi</Text>
+  //       </TouchableOpacity>
+  //     </View>
+  //   );
+  // }
 
   return (
     //<SafeAreaView style={styles.container}>
@@ -521,10 +532,10 @@ export default function ChatRoom() {
         <ChatRoomHeader
           user={item}
           router={router}
-          startCall={startCall}
-          acceptCall={acceptCall}
-          incomingCall={incomingCall}
-          isCaller={isCaller}
+          startCall={handleStartCall}
+          // acceptCall={acceptCall}
+          // incomingCall={incomingCall}
+          // isCaller={isCaller}
         />
         <View className="h3 border-b border-neutral-300 " />
         <View className="flex-1 justify-between bg-neutral-100 overflow-visible">

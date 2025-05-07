@@ -25,7 +25,15 @@
         "android.permission.RECORD_AUDIO",
         "android.permission.SYSTEM_ALERT_WINDOW",
         "android.permission.WAKE_LOCK",
-        "android.permission.BLUETOOTH"
+        "android.permission.BLUETOOTH",
+        "android.permission.BIND_TELECOM_CONNECTION_SERVICE",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.READ_PHONE_STATE",
+        "android.permission.CALL_PHONE",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.WAKE_LOCK"
       ],
       "package": "com.hungby04.chatapp"
     },
@@ -56,6 +64,18 @@
         "expo-av",
         {
           "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone."
+        }
+      ],
+      [
+        "@config-plugins/react-native-callkeep",
+        {
+          "appName": "ChatApp",
+          "android": {
+            "alertTitle": "Permissions required",
+            "alertDescription": "This application needs to access your phone accounts",
+            "cancelButton": "Cancel",
+            "okButton": "ok"
+          }
         }
       ]
     ],
