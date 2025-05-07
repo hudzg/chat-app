@@ -32,9 +32,10 @@ export default function _layout() {
         name="home"
         options={{
           title: "Home",
-          header: () => {
-            return isChatScreen ? null : <HomeHeader />; // Co the bo HomeHeader cho chat-room
-          },
+          // header: () => {
+          //   return isChatScreen ? null : <HomeHeader />; // Co the bo HomeHeader cho chat-room
+          // },
+          headerShown: false,
           tabBarIcon: ({ color, focused, size }) => (
             <Ionicons
               name={focused ? "home" : "home-outline"}
@@ -181,7 +182,17 @@ export default function _layout() {
           tabBarStyle: { display: 'none' }
         }}
       />
+
+      {/* <Tabs.Screen
+        name="chat-room"
+        options={{
+          href: null,
+          headerShown: false,
+          tabBarStyle: { display: 'none' }
+        }}
+      /> */}
     </Tabs>
+    
   );
 }
 

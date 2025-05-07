@@ -2,6 +2,7 @@ import { View, Text } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../../context/authContext";
 import { StatusBar } from "expo-status-bar";
+import HomeHeader from "../../../components/HomeHeader";
 // import { heightPercentageToDP as hp } from "react-native-responsive-screen";
 // import ChatList from "../../components/ChatList";
 // import Loading from "../../components/Loading";
@@ -101,6 +102,7 @@ export default function Home() {
 
   return (
     <View className="flex-1 bg-white">
+      <HomeHeader/>
       <StatusBar style="light" />
       {loading ? (
         <View className="flex items-center" style={{ top: hp(30) }}>

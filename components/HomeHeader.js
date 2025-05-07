@@ -1,4 +1,4 @@
-import { View, Text, Platform, TouchableOpacity } from "react-native";
+import { View, Text, Platform, TouchableOpacity, StyleSheet } from "react-native";
 import React from "react";
 import {
   widthPercentageToDP as wp,
@@ -15,7 +15,8 @@ import {
   MenuTrigger,
 } from "react-native-popup-menu";
 import { CustomMenuItem } from "./CustomMenuItem";
-import { AntDesign, Feather, Ionicons } from "@expo/vector-icons";
+import { AntDesign, Feather } from "@expo/vector-icons";
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useRouter } from "expo-router";
 
 const ios = Platform.OS === "ios";
@@ -42,17 +43,12 @@ export default function HomeHeader() {
   };
 
   return (
-    <View
-      style={{ paddingTop: ios ? top : top + 10 }}
-      className="flex-row justify-between px-5 bg-indigo-400 pb-6 rounded-b-3xl shadow-xl"
-    >
-      <View>
-        <Text style={{ fontSize: hp(3) }} className="font-medium text-white">
-          Chats
-        </Text>
-      </View>
-      {/* <AddFriendButton/> */}
-      <View>
+    <View style={styles.header}>
+      <Text style={styles.headerTitle}>Chats</Text>
+      <View style = {styles.buttonsContainer}>
+        <TouchableOpacity style={styles.iconButton} onPress={() => console.log("QR Code pressed")}>
+          <MaterialIcons name="qr-code-scanner" size={20} color="mediumpurple" />
+        </TouchableOpacity>
         <Menu>
           <MenuTrigger
             customStyles={{
@@ -123,17 +119,36 @@ const Divider = () => {
   return <View className="p-[1px] w-full bg-neutral-200" />;
 };
 
-// const AddFriendButton = () => {
-//   const router = useRouter();
-
-//   return <TouchableOpacity onPress = {() => {
-//     router.push("/search-friend");
-//   }}>
-//     <Ionicons
-//       name='person-add'
-//       size={26}
-//       color='white'
-//       style={{marginRight: 15}}
-//     />
-//   </TouchableOpacity>
-// }
+const styles = StyleSheet.create({
+  header: {
+    backgroundColor: "#fff",
+    paddingHorizontal: 10,
+    paddingTop: 30,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  headerTitle: {
+    paddingTop: 10,
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: "mediumpurple"
+  },
+  buttonsContainer: {
+    flexDirection: "row",
+    paddingTop: 10,
+    
+  },
+  iconButton: {
+    paddingTop: 4,
+    marginRight: 18,
+  },
+});
