@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Pressable,
   Alert,
+  StyleSheet,
 } from "react-native";
 import React, { useRef, useState } from "react";
 import {
@@ -19,6 +20,7 @@ import { useRouter } from "expo-router";
 import Loading from "../components/Loading";
 import CustomKeyboardView from "../components/CustomKeyboardView";
 import { useAuth } from "../context/authContext";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SignIn() {
   const router = useRouter();
@@ -40,8 +42,9 @@ export default function SignIn() {
     }
   };
   return (
+    // <SafeAreaView style={styles.container}>
     <CustomKeyboardView>
-      <StatusBar style="dark" />
+      <StatusBar backgroundColor="#fff" barStyle="dark-content" />
       <View
         style={{ paddingTop: hp(8), paddingHorizontal: wp(5) }}
         className="flex-1 gap-12"
@@ -138,5 +141,19 @@ export default function SignIn() {
         </View>
       </View>
     </CustomKeyboardView>
+    //  </SafeAreaView> 
   );
 }
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  header: {
+    paddingHorizontal: 10,
+    paddingTop: 30,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  }
+});

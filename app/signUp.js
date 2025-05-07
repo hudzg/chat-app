@@ -56,7 +56,7 @@ export default function SignUp() {
   };
   return (
     <CustomKeyboardView>
-      <StatusBar style="dark" />
+      <StatusBar backgroundColor="#fff" barStyle="dark-content" />
       <View
         style={{ paddingTop: hp(7), paddingHorizontal: wp(5) }}
         className="flex-1 gap-12"

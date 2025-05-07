@@ -53,6 +53,7 @@
     "react-dom": "18.3.1",
     "react-native": "0.76.7",
     "react-native-background-actions": "^4.0.1",
+
     "react-native-callkeep": "^4.3.16",
     "react-native-dotenv": "^3.4.11",
     "react-native-feather": "^1.1.2",
