@@ -9,4 +9,5 @@
   <string name="trigger_event">Trigger event</string>
   <string name="reverse_text_activity_title">Reversed text!</string>
   <string name="menuitem_reverse_text_label">Reverse text</string>
+  <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyDXdPgz_-pOfgIjEhgl5f8XOY3JRseyfoE</string>
 </resources>
