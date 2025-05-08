@@ -197,6 +197,16 @@ export default function GroupChat() {
     );
   };
 
+  const handleSendPosition = () => {
+    router.push({
+      pathname: "/maps",
+      params: {
+        groupId: item.id,
+        groupName: item.name,
+      },
+    });
+  };
+
   return (
     <CustomKeyboardView inChat={true}>
       <View className="flex-1 bg-white">
@@ -223,6 +233,12 @@ export default function GroupChat() {
           <View className="pt-2 px-1" style={{ marginBottom: hp(1.7) }}>
             <View className="flex-row justify-between items-center mx-3">
               <View className="flex-row">
+              <TouchableOpacity
+                  onPress={() => handleSendPosition()}
+                  className="bg-neutral-200 p-2 mr-2 rounded-full"
+                >
+                  <Feather name="map" size={hp(2.7)} color="#737373" />
+                </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => handleSendMedia()}
                   className="bg-neutral-200 p-2 mr-2 rounded-full"

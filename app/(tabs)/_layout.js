@@ -13,6 +13,7 @@ export default function _layout() {
   const segments = useSegments();
   const isChatScreen = segments.includes("chat-room");
   const isGroupChatScreen = segments.includes("group-chat");
+  const isInMap = segments.includes("maps");
   const { top } = useSafeAreaInsets;
   const insets = useSafeAreaInsets();
   // console.log(isChatScreen);
@@ -21,7 +22,7 @@ export default function _layout() {
     <Tabs
       screenOptions={{
         tabBarStyle: {
-          display: isChatScreen || isGroupChatScreen ? "none" : "flex",
+          display: isChatScreen || isGroupChatScreen || isInMap ? "none" : "flex",
         },
         tabBarActiveTintColor: Colors[colorScheme ?? "dark"].tint,
         tabBarInactiveTintColor: Colors[colorScheme ?? "light"].tint,
@@ -171,6 +172,14 @@ export default function _layout() {
         name="viewMembers"
         options={{
           href: null,
+        }}
+      />
+      
+      <Tabs.Screen
+        name="maps"
+        options={{
+          href: null,
+          headerShown: false,
         }}
       />
 
