@@ -1,4 +1,7 @@
-import { View, Text, Image } from "react-native";
+
+import { View, Text, Image, TouchableOpacity, Linking, FlatList } from "react-native";
+import MapView, { Marker } from "react-native-maps";
+import { router } from "expo-router";
 import {
   Menu,
   MenuOptions,
@@ -42,6 +45,58 @@ export default function MessageItem({
     if(message?.type === "deleted") {
       return <Text style={{ fontSize: hp(1.9), color: "#9CA3AF", fontStyle: "italic" }}>{message?.text}</Text>;
 
+    }
+    else if (message?.type === "location") {
+      return (
+        <View
+          style={{  
+            borderRadius: 12,
+            maxWidth: wp(60),
+          }}
+        >
+          <Text style={{ fontSize: hp(1.9) }}>
+            {message?.text}
+          </Text>
+          <TouchableOpacity
+            onPress={() =>
+              router.push({
+                pathname: "/maps",
+                params: {
+                  latitude: message.latitude,
+                  longitude: message.longitude,
+                  viewOnly: "true",
+                },
+              })
+            }
+          >
+            <MapView
+              style={{
+                width: wp(60),
+                height: hp(15),
+                marginTop: hp(1),
+                borderRadius: 10,
+              }}
+              initialRegion={{
+                latitude: message?.latitude,
+                longitude: message?.longitude,
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
+              }}
+              scrollEnabled={false}
+              zoomEnabled={false}
+              pitchEnabled={false}
+              rotateEnabled={false}
+            >
+              <Marker
+                coordinate={{
+                  latitude: message?.latitude,
+                  longitude: message?.longitude,
+                }}
+              />
+            </MapView>
+          </TouchableOpacity>
+        </View>
+      );
     }
     else if (message?.type === "video") {
       return (

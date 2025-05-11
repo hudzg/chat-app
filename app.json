@@ -31,7 +31,12 @@
         "android.permission.READ_PHONE_STATE",
         "android.permission.CALL_PHONE"
       ],
-      "package": "com.hungby04.chatapp"
+      "package": "com.hungby04.chatapp",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyDXdPgz_-pOfgIjEhgl5f8XOY3JRseyfoE"
+        }
+      }
     },
     "web": {
       "bundler": "metro",
@@ -63,6 +68,18 @@
         }
       ],
       [
+        "react-native-maps",
+        {
+          "googleMapsApiKey": "AIzaSyDXdPgz_-pOfgIjEhgl5f8XOY3JRseyfoE"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
+        }
+      ],
+      [
         "@config-plugins/react-native-callkeep",
         {
           "appName": "ChatApp",
@@ -83,7 +100,7 @@
         "origin": false
       },
       "eas": {
-        "projectId": "44b3b553-aa58-4415-8789-92904aa8c857"
+        "projectId": "0a0231b1-c3cb-4a5b-a463-12aef9993a8d"
       }
     }
   }
