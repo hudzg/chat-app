@@ -3,6 +3,7 @@ import { db } from "../firebaseConfig"; // đường dẫn đến file firebase.
 
 export const printDatabase = async (collectionName) => {
   const querySnapshot = await getDocs(collection(db, collectionName));
+  console.log(collectionName + ":\n");
   querySnapshot.forEach((doc) => {
     console.log(doc.id, doc.data());
   });
