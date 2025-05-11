@@ -106,7 +106,7 @@ export default function _layout() {
           ),
         }}
       />
-      <Tabs.Screen
+      {/* <Tabs.Screen
         name="setting"
         options={{
           title: "Setting",
@@ -118,8 +118,8 @@ export default function _layout() {
             />
           ),
         }}
-      />
-      {/* <Tabs.Screen
+      /> */}
+      <Tabs.Screen
         name="profile"
         options={{
           title: "Profile",
@@ -132,7 +132,7 @@ export default function _layout() {
             />
           ),
         }}
-      /> */}
+      />
       {/* ẩn khỏi thanh điều hướng bên dưới */}
       <Tabs.Screen
         name="searchFriends"
@@ -141,13 +141,7 @@ export default function _layout() {
           href: null,
         }}
       />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          headerShown: false,
-          href: null,
-        }}
-      />
+
       <Tabs.Screen
         name="friendRequests"
         options={{

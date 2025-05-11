@@ -167,19 +167,29 @@ export default function FriendSearchScreen() {
   const handleSendFriendRequest = async (friend) => {
     //console.log(friend);
     try {
-      const friendRequestRef = doc(
-        db,
-        "friendRequests",
-        `${user.userId}_${friend.id}`
+      const friendRequestRef = collection(db, "friendRequests");
+      const q = query(
+        friendRequestRef,
+        where('from', '==', user.userId),
+        where('to', '==', friend.id),
       );
-      
-      await setDoc(friendRequestRef, {
-        from: user.userId,
-        to: friend.id,
-        status: "pending",
-        createdAt: new Date(),
-      });
-      Alert.alert("Success", `Friend request sent to ${friend.name}`);
+
+      // Kiểm tra xem đã có lời mời kết bạn chưa
+      const friendRequestSnap = await getDocs(q);
+
+      if (!friendRequestSnap.empty) {
+        Alert.alert("Success", `Friend request have already sent to ${friend.name}`);
+        // Có thể thông báo cho người dùng hoặc return tại đây
+        
+      } else {
+          await setDoc(doc(db, "friendRequests", `${user.userId}_${friend.id}`), {
+            from: user.userId,
+            to: friend.id,
+            status: "pending",
+            createdAt: new Date(),
+          });
+          Alert.alert("Success", `Friend request sent to ${friend.name}`);
+      }
     } catch (error) {
       console.error("Error sending friend request:", error.message);
       Alert.alert("Error", "Failed to send friend request.");

@@ -14,8 +14,8 @@ import {
   setDoc,
 } from "firebase/firestore";
 import { StatusBar } from 'expo-status-bar';
-import {printDatabase} from '../../utils/printDB'
-
+import { printDatabase } from '../../utils/printDB'
+import getAvatarUrl from "../../utils/getAvatarUrl"
 /**
  * Notification Schema: 
  * (id, type, user, content, createdAt, status)
@@ -34,7 +34,7 @@ export default function NotificationsScreen({ navigation }) {
     const sentUser = querySnapshot.docs.map((doc) => ({
       ...doc.data()
     }))[0];
-    console.log(sentUser);
+    //console.log(sentUser);
     return {
       id : request.id,
       type : "Friend Request",
@@ -48,41 +48,40 @@ export default function NotificationsScreen({ navigation }) {
 
 
   useEffect(() => {
-    const fetchFriendRequests = async () => {
-      try {
-        const q = query(
-          collection(db, "friendRequests"),
-          where("to", "==", user.userId),
-          where("status", "==", "pending")
-        );
-        const querySnapshot = await getDocs(q);
-        const requestsWithDetails = await Promise.all(
-          querySnapshot.docs.map(async (doc) => {
-            const requestData = doc.data();
-            const userDoc = await getDocs(
-              query(usersRef, where("userId", "==", requestData.from))
-            );
-            const userData = userDoc.docs[0]?.data();
-            return {
-              id: doc.id,
-              ...requestData,
-              avatar: userData?.profileUrl || "",
-              username: userData?.username || "Unknown",
-            };
-          })
-        );
-
-        setRequests(requestsWithDetails);
-        setNotifications(await Promise.all(requests.map(request=>adaptRequestToNotification(request))));
-        
-      } catch (error) {
-        console.error("Error fetching friend requests:", error.message);
-      }
-
-    };
-
-    fetchFriendRequests();
-  }, []);
+      const fetchFriendRequests = async () => {
+        try {
+          const q = query(
+            collection(db, "friendRequests"),
+            where("to", "==", user.userId),
+          );
+          const querySnapshot = await getDocs(q);
+  
+          const requestsWithDetails = await Promise.all(
+            querySnapshot.docs.map(async (doc) => {
+              const requestData = doc.data();
+              const userDoc = await getDocs(
+                query(usersRef, where("userId", "==", requestData.from))
+              );
+              const userData = userDoc.docs[0]?.data();
+              return {
+                id: doc.id,
+                ...requestData,
+                avatar: userData?.profileUrl || "",
+                username: userData?.username || "Unknown",
+              };
+            })
+          );
+          
+          setRequests(requestsWithDetails);
+          notiPromises = requestsWithDetails.map((request) => adaptRequestToNotification(request))
+          setNotifications(await Promise.all(notiPromises))
+        } catch (error) {
+          console.error("Error fetching friend requests:", error.message);
+        }
+      };
+  
+      fetchFriendRequests();
+    }, [requests]);
 
   const handleAcceptRequest = async (request) => {
     
@@ -108,7 +107,7 @@ export default function NotificationsScreen({ navigation }) {
   const handleRejectRequest = async (request) => {
     try {
       const requestRef = doc(db, "friendRequests", request.id);
-      await deleteDoc(requestRef);
+      //await deleteDoc(requestRef);
       Alert.alert("Success", "Friend request rejected.");
       setRequests((prev) => prev.filter((r) => r.id !== request.id));
     } catch (error) {
@@ -117,34 +116,12 @@ export default function NotificationsScreen({ navigation }) {
   };
 
 
-  // const handleAcceptFriend = (request) => {
-  //   // Xử lý chấp nhận lời mời kết bạn
-  //   setNotifications(notifications.map(notification => 
-  //     notification.id === id ? { ...notification, read: true } : notification
-  //   ));
-  // };
-
-  // const handleDeclineFriend = (id) => {
-  //   // Xử lý từ chối lời mời kết bạn
-  //   setNotifications(notifications.map(notification => 
-  //     notification.id === id ? { ...notification, read: true } : notification
-  //   ));
-  // };
 
   const handleNotificationClick = (notification) => {
-    // Đánh dấu thông báo đã đọc khi click
+
     setNotifications(notifications.map(item => 
       item.id === notification.id ? { ...item, read: true } : item
     ));
-
-    // Điều hướng đến màn hình tương ứng
-    if (notification.type === 'message') {
-      navigation.navigate('Messages', { userId: notification.user.id });
-    } else if (notification.type === 'call') {
-      navigation.navigate('Calls', { userId: notification.user.id });
-    } else if (notification.type === 'friend-request') {
-      navigation.navigate('Friends', { userId: notification.user.id });
-    }
   };
 
   const renderNotificationItem = ({ item }) => (
@@ -156,7 +133,7 @@ export default function NotificationsScreen({ navigation }) {
       onPress={() => handleNotificationClick(item)}
     >
       <Image 
-        source={{ uri: item.user.profileUrcl  }} 
+        source={{ uri: getAvatarUrl(item.user.profileUrl)  }} 
         style={styles.avatar} 
       />
       
@@ -168,7 +145,7 @@ export default function NotificationsScreen({ navigation }) {
         
         <Text style={styles.timeText}>{item.time}</Text>
         
-        {item.type === 'Friend Request' && (
+        {item.type === 'Friend Request' && item.status === "pending" && (
           <View style={styles.actionButtons}>
             <TouchableOpacity 
               style={styles.acceptButton}

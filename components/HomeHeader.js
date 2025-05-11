@@ -46,6 +46,9 @@ export default function HomeHeader() {
     <View style={styles.header}>
       <Text style={styles.headerTitle}>Chats</Text>
       <View style = {styles.buttonsContainer}>
+        <TouchableOpacity style={styles.iconButton} onPress={() => handleCreateGroup()}>
+          <AntDesign name="addusergroup" size={20} color="mediumpurple" />
+        </TouchableOpacity>
         <TouchableOpacity style={styles.iconButton} onPress={() => console.log("QR Code pressed")}>
           <MaterialIcons name="qr-code-scanner" size={20} color="mediumpurple" />
         </TouchableOpacity>
@@ -81,20 +84,20 @@ export default function HomeHeader() {
               icon={<Feather name="user" size={hp(2.5)} color="#737373" />}
             />
             <Divider />
-            <Divider />
+            {/* <Divider />
             <CustomMenuItem
               text="Create Group"
               action={handleCreateGroup}
               value={null}
               icon={<Feather name="users" size={hp(2.5)} color="#737373" />}
-            />
-            <Divider />
+            /> */}
+            {/* <Divider />
             <CustomMenuItem
               text="Friend Requests"
               action={() => router.push("/friendRequests")}
               value={null}
               icon={<Feather name="user-plus" size={hp(2.5)} color="#737373" />}
-            />
+            /> */}
             <Divider />
             <CustomMenuItem
               text="Sign Out"
@@ -131,7 +134,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   headerTitle: {
-    paddingTop: 10,
+    paddingTop: 5,
     fontSize: 24,
     fontWeight: 'bold',
     color: "mediumpurple"
@@ -142,7 +145,7 @@ const styles = StyleSheet.create({
     
   },
   iconButton: {
-    paddingTop: 4,
+    paddingTop: 5,
     marginRight: 18,
   },
 });

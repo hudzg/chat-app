@@ -20,6 +20,7 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 export default function CreateGroup() {
   const [groupName, setGroupName] = useState("");
@@ -143,12 +144,20 @@ export default function CreateGroup() {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Create Group</Text>
       </View>
-      <TextInput
-        style={styles.input}
-        placeholder="Group name"
-        value={groupName}
-        onChangeText={setGroupName}
-      />
+      <View style={styles.searchContainer}>
+        <View style={styles.searchBarContainer}>
+        <MaterialIcons name="drive-file-rename-outline"  size={20} color="#666" />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Enter group name..."
+          placeholderTextColor="#D5D5D5"
+          value={groupName}
+          onChangeText={setGroupName}
+          clearButtonMode="while-editing"
+        />
+        </View>
+      </View>
+      
       <Text style={styles.subtitle}>Select members</Text>
       {users.length === 0 ? (
         <Text style={styles.noFriends}>You have no friends</Text>
@@ -197,16 +206,29 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     //padding: 20,
-    paddingHorizontal: 10,
+    //paddingHorizontal: 10,
     backgroundColor: "#fff",
   },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    padding: 15,
-    marginBottom: 20,
-    borderRadius: 8,
-    fontSize: hp(2),
+  searchContainer : {
+    backgroundColor: "mediumpurple",
+    padding: 12,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  searchBarContainer: {
+    flex: 1,
+    backgroundColor: "white",
+    borderRadius: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  searchInput: {
+    flex: 1,
+    color: "black",
+    marginLeft: 8,
+    fontSize: 16,
   },
   subtitle: {
     fontSize: hp(2),
