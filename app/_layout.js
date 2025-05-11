@@ -1,6 +1,6 @@
 import { View, Text, Alert } from "react-native";
 import React, { useEffect } from "react";
-import { Slot, useRouter, useSegments, usePathname } from "expo-router";
+import { Stack, useRouter, useSegments, usePathname, Slot } from "expo-router";
 import { AuthContextProvider, useAuth } from "../context/authContext";
 import { MenuProvider } from "react-native-popup-menu";
 import { CallProvider } from "../context/callContext";
@@ -127,7 +127,7 @@ const MainLayout = () => {
     return unsubscribe;
   }, []);
 
-  return <Slot />;
+  return <Slot/>;//<Stack screenOptions = {{headerShown: false}}/>;
 };
 
 export default function RootLayout() {

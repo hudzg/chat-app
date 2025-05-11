@@ -28,9 +28,9 @@ export default function Home() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // useEffect(() => {
-  //   printDatabase("users");
-  // }, []);
+  useEffect(() => {
+    printDatabase("users");
+  }, []);
 
   useEffect(() => {
     if (user?.uid) {
@@ -102,8 +102,9 @@ export default function Home() {
 
   return (
     <View className="flex-1 bg-white">
+      <StatusBar backgroundColor="#fff" barStyle="dark-content" />
       <HomeHeader/>
-      <StatusBar style="light" />
+      
       {loading ? (
         <View className="flex items-center" style={{ top: hp(30) }}>
           <Loading size={hp(10)} />

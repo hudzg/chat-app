@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import React, { useEffect, useState } from "react";
 import {
   widthPercentageToDP as wp,
@@ -17,6 +17,8 @@ import {
 import { db } from "../firebaseConfig";
 import { useRouter } from 'expo-router';
 import { get } from "firebase/database";
+
+import getAvatarUrl from '../utils/getAvatarUrl';
 
 export default function ChatItem({ currentUser, item, noBorder }) {
   const [lastMessage, setLastMessage] = useState(undefined);
@@ -135,7 +137,7 @@ export default function ChatItem({ currentUser, item, noBorder }) {
     if(item.type === 'group') {
       return require("../assets/images/group-icon.png"); 
     } else {
-      return item?.profileUrl;
+      return getAvatarUrl(item?.profileUrl);
     }
   }
 
@@ -147,13 +149,15 @@ export default function ChatItem({ currentUser, item, noBorder }) {
       }`}
     >
 
-
-      <Image
-        style={{ height: hp(6), width: hp(6), borderRadius: 100 }}
-        source={getDisPlayImage()}
-        placeholder={{ blurhash }}
-        transition={500}
-      />
+      <View style = {styles.avatarContainer}>
+        <Image
+              style={ styles.avatar }
+              source={getDisPlayImage()}
+              placeholder={{ blurhash }}
+              transition={500}
+        />
+      </View>
+      
       <View className="flex-1 gap-1">
         <View className="flex-row justify-between">
           <Text
@@ -179,3 +183,19 @@ export default function ChatItem({ currentUser, item, noBorder }) {
     </TouchableOpacity>
   );
 }
+
+const styles = StyleSheet.create({
+  avatarContainer : {
+    width: 60,
+    height: 60,
+    borderRadius: 30, // một nửa chiều rộng/chiều cao
+    backgroundColor: '#D3D3D3',
+  },
+  avatar: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    marginTop: 2,
+    marginLeft: 2
+  }
+});

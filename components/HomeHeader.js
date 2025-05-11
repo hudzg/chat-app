@@ -81,12 +81,6 @@ export default function HomeHeader() {
               icon={<Feather name="user" size={hp(2.5)} color="#737373" />}
             />
             <Divider />
-            <CustomMenuItem
-              text="Search Friends"
-              action={handleSearchFriends}
-              value={null}
-              icon={<Feather name="search" size={hp(2.5)} color="#737373" />}
-            />
             <Divider />
             <CustomMenuItem
               text="Create Group"

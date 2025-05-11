@@ -7,6 +7,7 @@ import {
   FlatList,
   StyleSheet,
   ActivityIndicator,
+  StatusBar
 } from "react-native";
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
@@ -138,6 +139,10 @@ export default function CreateGroup() {
 
   return (
     <View style={styles.container}>
+      <StatusBar backgroundColor="#fff" barStyle="dark-content" />
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Create Group</Text>
+      </View>
       <TextInput
         style={styles.input}
         placeholder="Group name"
@@ -177,9 +182,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#fff",
   },
+  header: {
+    paddingHorizontal: 10,
+    paddingTop: 30,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  headerTitle: {
+    paddingTop: 10,
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
   container: {
     flex: 1,
-    padding: 20,
+    //padding: 20,
+    paddingHorizontal: 10,
     backgroundColor: "#fff",
   },
   input: {

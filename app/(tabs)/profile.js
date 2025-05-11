@@ -18,7 +18,8 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import { ref, onValue, set, remove, push, get } from "firebase/database";
 import * as ImagePicker from "expo-image-picker";
-
+import getAvatarUrl from "../../utils/getAvatarUrl"
+import {getAllFriends} from "../../utils/getUser"
 
 const uploadMediaAsync = async (uri, mediaType) => {
     try {
@@ -79,7 +80,17 @@ const ProfileScreen = () => {
   const { user } = useAuth(); // Lấy thông tin user từ context
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [friends, setFriends] = useState([]);
 
+
+  useEffect(() => {
+    const getNoFriend = async () => {
+      const allFriends = await getAllFriends(user.userId);
+      console.log(allFriends.length());
+      setFriends(allFriends);
+    } 
+    getNoFriend();
+  }, []);
 
   const handleEditAvatar = async () => {
     try {
@@ -145,7 +156,7 @@ const ProfileScreen = () => {
         {/* Profile Info */}
         <View style={styles.profileInfo}>
           <View style={styles.avatarContainer}>
-            <Image source={{ uri: user?.profileUrl }} style={styles.avatar} />
+            <Image source={{ uri: getAvatarUrl(user?.profileUrl) }} style={styles.avatar} />
             <TouchableOpacity style={styles.editAvatarButton} onPress={handleEditAvatar}>
               <Icon name="camera-outline" size={24} color="black" />
             </TouchableOpacity>
@@ -159,18 +170,18 @@ const ProfileScreen = () => {
           <View style={styles.statsContainer}>
             <View style={styles.statItem}>
               <Text style={styles.statNumber}>{100}</Text>
-              <Text style={styles.statLabel}>Bài viết</Text>
+              <Text style={styles.statLabel}>Status</Text>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
-              <Text style={styles.statNumber}>{100}</Text>
-              <Text style={styles.statLabel}>Người theo dõi</Text>
+              <Text style={styles.statNumber}>{friends.length}</Text>
+              <Text style={styles.statLabel}>Friends</Text>
             </View>
-            <View style={styles.statDivider} />
+            {/* <View style={styles.statDivider} />
             <View style={styles.statItem}>
               <Text style={styles.statNumber}>{100}</Text>
               <Text style={styles.statLabel}>Đang theo dõi</Text>
-            </View>
+            </View> */}
           </View>
         </View>
         
@@ -192,11 +203,11 @@ const ProfileScreen = () => {
         {/* Additional sections can be added here */}
         <View style={styles.additionalSection}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Hoạt động gần đây</Text>
+            <Text style={styles.sectionTitle}>Recent actitvities</Text>
           </View>
           
           <View style={styles.emptyState}>
-            <Text style={styles.emptyStateText}>Chưa có hoạt động nào gần đây</Text>
+            <Text style={styles.emptyStateText}>No recent activitiy</Text>
           </View>
         </View>
       </ScrollView>

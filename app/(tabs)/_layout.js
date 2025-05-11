@@ -1,6 +1,6 @@
 import { StyleSheet, View, Text, Image, StatusBar } from "react-native";
 import React from "react";
-import { Tabs } from "expo-router";
+import { Tabs, Stack } from "expo-router";
 import HomeHeader from "../../components/HomeHeader";
 import { useColorScheme } from "../../hooks/useColorScheme";
 import { Colors } from "../../constants/Colors";
@@ -25,7 +25,7 @@ export default function _layout() {
         },
         tabBarActiveTintColor: Colors[colorScheme ?? "dark"].tint,
         tabBarInactiveTintColor: Colors[colorScheme ?? "light"].tint,
-        headerShown: true,
+        headerShown: false,
       }}
     >
       <Tabs.Screen
@@ -72,7 +72,7 @@ export default function _layout() {
         name="friends"
         options={{
           title: "Friends",
-          headerShown: true,
+          headerShown: false,
           tabBarIcon: ({ color, focused, size }) => (
             <View style={{ alignItems: "center" }}>
               <Image
@@ -95,6 +95,7 @@ export default function _layout() {
         name="notifications"
         options={{
           title: "Notification",
+          headerShown: false,
           tabBarIcon: ({ color, focused, size }) => (
             <Ionicons
               name={focused ? "notifications-sharp" : "notifications-outline"}
