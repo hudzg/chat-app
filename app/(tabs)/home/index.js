@@ -22,34 +22,35 @@ import ChatList from "../../../components/ChatList";
 import Loading from "../../../components/Loading";
 import { usersRef, db } from "../../../firebaseConfig";
 import { printDatabase } from "../../../utils/printDB";
+import { getUser } from "../../../utils/getUser";
 
 export default function Home() {
   const { user } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    printDatabase("users");
-  }, []);
+  // useEffect(() => {
+  //   printDatabase("users");
+  // }, []);
 
   useEffect(() => {
-    if (user?.uid) {
+    if (user?.userId) {
       const unsubscribe = listenToFriends();
       return () => unsubscribe();
     }
-  }, [user?.uid]);
+  }, [user?.userId]);
 
   const listenToFriends = () => {
     setLoading(true);
 
     const q1 = query(
       collection(db, "friends"),
-      where("userId1", "==", user?.uid)
+      where("userId1", "==", user?.userId)
     );
 
     const q2 = query(
       collection(db, "friends"),
-      where("userId2", "==", user?.uid)
+      where("userId2", "==", user?.userId)
     );
 
     const unsubscribe1 = onSnapshot(q1, (snapshot1) => {
@@ -72,7 +73,7 @@ export default function Home() {
     const friendIds = [
       ...new Set([...(friendIds1 || []), ...(friendIds2 || [])]),
     ];
-
+    //console.log(friendIds);
     if (friendIds.length === 0) {
       setUsers([]);
       setLoading(false);
@@ -84,13 +85,8 @@ export default function Home() {
 
   const fetchFriends = async (friendIds) => {
     try {
-      const usersQuery = query(usersRef, where("userId", "in", friendIds));
-      const usersSnapshot = await getDocs(usersQuery);
-
-      let friends = [];
-      usersSnapshot.forEach((doc) => {
-        friends.push({ ...doc.data() });
-      });
+      const friendPromises = friendIds.map((friendId) => getUser(friendId));
+      const friends = await Promise.all(friendPromises);
 
       setUsers(friends);
     } catch (e) {
@@ -102,9 +98,8 @@ export default function Home() {
 
   return (
     <View className="flex-1 bg-white">
-      <StatusBar backgroundColor="#fff" barStyle="dark-content" />
       <HomeHeader/>
-      
+      <StatusBar style="light" />
       {loading ? (
         <View className="flex items-center" style={{ top: hp(30) }}>
           <Loading size={hp(10)} />

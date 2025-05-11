@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, onSnapshot, collection } from "firebase/firestore";
 import { db } from "../../firebaseConfig";
 import { useAuth } from "../../context/authContext";
 import { router } from 'expo-router';
+import Ionicons from "@expo/vector-icons/Ionicons";
 import {
   View,
   Text,
@@ -77,19 +78,32 @@ const uploadMediaAsync = async (uri, mediaType) => {
   };
   
 const ProfileScreen = () => {
-  const { user } = useAuth(); // Lấy thông tin user từ context
+  const { user, logout } = useAuth(); // Lấy thông tin user từ context
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [friends, setFriends] = useState([]);
+  const [noFriends, setNoFriends] = useState(0);
 
 
   useEffect(() => {
-    const getNoFriend = async () => {
-      const allFriends = await getAllFriends(user.userId);
-      console.log(allFriends.length());
-      setFriends(allFriends);
-    } 
-    getNoFriend();
+    //console.log (user.userId);
+    const unsubcribe = onSnapshot(collection(db, "friends"), async (snapshot) => {
+      //getContacts(snapshot);
+      const friends1 = await snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })).filter(friend => friend.userId2 == user.userId).map(doc => doc.userId1);
+
+      const friends2 = await snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })).filter(friend => friend.userId1 == user.userId).map(doc => doc.userId2);
+
+
+      const friendIds = [...new Set([...friends1, ...friends2])];
+      console.log(friendIds);
+      setNoFriends(friendIds.length);
+    })
+    return () => unsubcribe();
   }, []);
 
   const handleEditAvatar = async () => {
@@ -134,10 +148,13 @@ const ProfileScreen = () => {
     console.log('Edit bio');
   };
 
-  const handleSettings = () => {
-    router.push('(tabs)/setting');
+  const handleLogout = async () => {
+    await logout();
   };
 
+  const handleSettings = () => {
+    console.log("Setting pressed!");
+  }
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
@@ -169,12 +186,12 @@ const ProfileScreen = () => {
           
           <View style={styles.statsContainer}>
             <View style={styles.statItem}>
-              <Text style={styles.statNumber}>{100}</Text>
+              <Text style={styles.statNumber}>{0}</Text>
               <Text style={styles.statLabel}>Status</Text>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
-              <Text style={styles.statNumber}>{friends.length}</Text>
+              <Text style={styles.statNumber}>{noFriends}</Text>
               <Text style={styles.statLabel}>Friends</Text>
             </View>
             {/* <View style={styles.statDivider} />
@@ -209,7 +226,16 @@ const ProfileScreen = () => {
           <View style={styles.emptyState}>
             <Text style={styles.emptyStateText}>No recent activitiy</Text>
           </View>
+
+
         </View>
+
+        <TouchableOpacity 
+          style={styles.logoutButton}
+          onPress={handleLogout}
+        >
+          <Text style={styles.logoutText}>Log out</Text>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
@@ -382,6 +408,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#999',
   },
+  logoutButton: {
+    backgroundColor: '#E5E7EB',
+    marginHorizontal: 10,
+    padding: 16,
+    borderRadius: 16,
+    alignItems: 'center',
+  },
+  logoutText: {
+    fontSize: 16,
+    color: '#000000',
+    fontWeight: 'bold'
+  }
 });
 
 export default ProfileScreen;
