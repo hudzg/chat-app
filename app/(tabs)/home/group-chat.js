@@ -18,6 +18,7 @@ import {
   deleteChat,
   deleteOneMessage,
   leaveGroup,
+  sendMedia,
 } from "../../../components/GroupActions";
 import { Feather } from "@expo/vector-icons";
 import {
@@ -202,6 +203,16 @@ export default function GroupChat() {
     });
   };
 
+  const handleSendMedia = async () => {
+    const { status } = await sendMedia(item.id, user.userId);
+    if (status !== "granted") {
+      Alert.alert(
+        "Permission required",
+        "You need to grant permission to access the media library"
+      );
+    }
+  }
+
   return (
     <CustomKeyboardView inChat={true}>
       <View className="flex-1 bg-white">
@@ -232,20 +243,20 @@ export default function GroupChat() {
                   onPress={() => handleSendPosition()}
                   className="bg-neutral-200 p-2 mr-2 rounded-full"
                 >
-                  <Feather name="map" size={hp(2.7)} color="#737373" />
+                  <Feather name="map" size={hp(2.7)} color="mediumpurple" />
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => handleSendMedia()}
                   className="bg-neutral-200 p-2 mr-2 rounded-full"
                 >
-                  <Feather name="image" size={hp(2.7)} color="#737373" />
+                  <Feather name="image" size={hp(2.7)} color="mediumpurple" />
                 </TouchableOpacity>
-                <TouchableOpacity
+                {/* <TouchableOpacity
                   onPress={() => handleSendMedia()}
                   className="bg-neutral-200 p-2 mr-2 rounded-full"
                 >
-                  <Feather name="video" size={hp(2.7)} color="#737373" />
-                </TouchableOpacity>
+                  <Feather name="video" size={hp(2.7)} color="mediumpurple" />
+                </TouchableOpacity> */}
               </View>
               <View className="flex-1 flex-row justify-between bg-white border p-2 border-neutral-300 rounded-full pl-5">
                 <TextInput
@@ -259,7 +270,7 @@ export default function GroupChat() {
                   onPress={handleSendMessage}
                   className="bg-neutral-200 p-2 mr-[1px] rounded-full"
                 >
-                  <Feather name="send" size={hp(2.7)} color="#737373" />
+                  <Feather name="send" size={hp(2.7)} color="mediumpurple" />
                 </TouchableOpacity>
               </View>
             </View>

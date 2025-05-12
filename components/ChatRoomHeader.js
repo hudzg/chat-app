@@ -36,10 +36,10 @@ export default function ChatRoomHeader({
         headerLeft: () => (
           <View className="flex-row items-center gap-4">
             <TouchableOpacity
-              style={{ borderWidth: 2, borderColor: "red" }}
+              // style={{ borderWidth: 2, borderColor: "red" }}
               onPressIn={() => router.back()}
             >
-              <Entypo name="chevron-left" size={hp(4)} color="#737373" />
+              <Entypo name="chevron-left" size={hp(4)} color="mediumpurple" />
             </TouchableOpacity>
             <View className="flex-row items-center gap-3">
               <Image
@@ -62,9 +62,9 @@ export default function ChatRoomHeader({
         ),
         headerRight: () => (
           <View className="flex-row items-center gap-8">
-            <Ionicons name="call" size={hp(2.8)} color="#737373" />
+            <Ionicons name="call" size={hp(2.8)} color="mediumpurple" />
             <TouchableOpacity onPressIn={startCall}>
-              <Ionicons name="videocam" size={hp(2.8)} color="#737373" />
+              <Ionicons name="videocam" size={hp(2.8)} color="mediumpurple" />
             </TouchableOpacity>
 
             <Menu>
@@ -72,7 +72,7 @@ export default function ChatRoomHeader({
                 <Ionicons
                   name="ellipsis-vertical"
                   size={hp(2.8)}
-                  color="#737373"
+                  color="mediumpurple"
                 />
               </MenuTrigger>
               <MenuOptions
