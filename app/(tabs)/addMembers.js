@@ -1,6 +1,20 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, FlatList, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+  StyleSheet,
+} from "react-native";
 import { useLocalSearchParams, router, useFocusEffect } from "expo-router";
+import { Feather } from "@expo/vector-icons";
+
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 import { Image } from "expo-image";
 import {
   collection,
@@ -14,7 +28,6 @@ import { db } from "../../firebaseConfig";
 import { useAuth } from "../../context/authContext";
 import { addMembersToGroup } from "../../components/GroupActions";
 import { Ionicons } from "@expo/vector-icons";
-import { heightPercentageToDP as hp } from "react-native-responsive-screen";
 
 export default function AddMembers() {
   const { groupId, groupName } = useLocalSearchParams();
@@ -24,7 +37,7 @@ export default function AddMembers() {
   const [loading, setLoading] = useState(true);
 
   useFocusEffect(
-    React.useCallback(() => {
+    useCallback(() => {
       fetchFriends();
       setSelectedUsers([]);
     }, [])
@@ -56,7 +69,7 @@ export default function AddMembers() {
 
       // Filter out friends who are already members
       const nonMemberFriendIds = Array.from(friendIds).filter(
-        id => !currentMembers.includes(id)
+        (id) => !currentMembers.includes(id)
       );
 
       if (nonMemberFriendIds.length > 0) {
@@ -66,7 +79,7 @@ export default function AddMembers() {
           where("userId", "in", nonMemberFriendIds)
         );
         const usersSnap = await getDocs(userQuery);
-        setFriends(usersSnap.docs.map(doc => doc.data()));
+        setFriends(usersSnap.docs.map((doc) => doc.data()));
       } else {
         setFriends([]);
       }
@@ -101,13 +114,20 @@ export default function AddMembers() {
   };
 
   return (
-    <View className="flex-1 bg-white p-4">
+    <View className="flex-1 bg-white p-5">
       {loading ? (
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" color="gray" />
         </View>
       ) : friends.length > 0 ? (
         <>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+          >
+            <Feather name="arrow-left" size={hp(3)} color="#000" />
+          </TouchableOpacity>
+          <Text className="text-lg font-semibold mb-2.5 mt-5 text-center">Add members</Text>
           <FlatList
             data={friends}
             renderItem={({ item }) => (
@@ -132,7 +152,7 @@ export default function AddMembers() {
             onPress={handleAddMembers}
           >
             <Text className="text-white text-center font-semibold">
-              Add Selected Members
+              Add Selected Members {selectedUsers.length != 0 ? "(" + selectedUsers.length + ")" : ""}
             </Text>
           </TouchableOpacity>
         </>
@@ -144,3 +164,16 @@ export default function AddMembers() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  backButton: {
+    position: "absolute",
+    top: hp(4),
+    left: wp(4),
+    opacity: 0.5,
+    backgroundColor: "white",
+    padding: wp(2),
+    borderRadius: 30,
+    zIndex: 1,
+  },
+});

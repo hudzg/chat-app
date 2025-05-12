@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, } from "react";
 import {
   View,
   Text,
@@ -6,8 +6,10 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  StyleSheet,
 } from "react-native";
 import { useLocalSearchParams, router, useFocusEffect } from "expo-router";
+import { Feather } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import {
   collection,
@@ -21,7 +23,8 @@ import { db } from "../../firebaseConfig";
 import { useAuth } from "../../context/authContext";
 import { removeMembersFromGroup } from "../../components/GroupActions";
 import { Ionicons } from "@expo/vector-icons";
-import { heightPercentageToDP as hp } from "react-native-responsive-screen";
+import { 
+  widthPercentageToDP as wp,heightPercentageToDP as hp } from "react-native-responsive-screen";
 
 export default function ViewMembers() {
   const { groupId, groupName } = useLocalSearchParams();
@@ -119,7 +122,7 @@ export default function ViewMembers() {
   };
 
   return (
-    <View className="flex-1 bg-white p-4">
+    <View className="flex-1 bg-white p-5">
       {loading ? (
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" color="gray" />
@@ -130,6 +133,13 @@ export default function ViewMembers() {
         </Text>
       ) : (
         <>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+          >
+            <Feather name="arrow-left" size={hp(3)} color="#000" />
+          </TouchableOpacity>
+          <Text className="text-lg font-semibold mb-2.5 mt-5 text-center">Members</Text>
           <FlatList
             data={members}
             renderItem={({ item }) => (
@@ -183,3 +193,17 @@ export default function ViewMembers() {
     </View>
   );
 }
+
+
+const styles = StyleSheet.create({
+  backButton: {
+    position: "absolute",
+    top: hp(4),
+    left: wp(4),
+    opacity: 0.5,
+    backgroundColor: "white",
+    padding: wp(2),
+    borderRadius: 30,
+    zIndex: 1,
+  },
+});

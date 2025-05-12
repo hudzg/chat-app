@@ -126,7 +126,7 @@ export default function MessageItem({
 
   return (
     <View className={`flex-row ${isOwner ? "justify-end mr-3" : "ml-3"} mb-3`}>
-      {!isOwner && (
+      {!isOwner && !isOwner && sender && (
         <View className="mb-1">
           <Image
             source={{ uri: sender?.profileUrl }}
