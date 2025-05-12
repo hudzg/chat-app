@@ -153,6 +153,7 @@ export default function _layout() {
         name="createGroup"
         options={{
           href: null,
+          headerShown: false,
         }}
       />
 
@@ -160,6 +161,7 @@ export default function _layout() {
         name="addMembers"
         options={{
           href: null,
+          headerShown: false,
         }}
       />
 
@@ -167,6 +169,7 @@ export default function _layout() {
         name="viewMembers"
         options={{
           href: null,
+          headerShown: false,
         }}
       />
       

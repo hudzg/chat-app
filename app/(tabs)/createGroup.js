@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -13,7 +13,7 @@ import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../context/authContext";
 import { createGroup } from "../../components/GroupActions";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../../firebaseConfig";
 import {
@@ -30,13 +30,17 @@ export default function CreateGroup() {
   const { user } = useAuth();
   const router = useRouter();
 
-  useEffect(() => {
-    if (!user?.userId) {
-      router.replace("/signIn");
-      return;
-    }
-    fetchUsers();
-  }, [user]);
+  useFocusEffect(
+    useCallback(() => {
+      if (!user?.userId) {
+        router.replace("/signIn");
+        return;
+      }
+      fetchUsers();
+      setGroupName("");
+      setSelectedUsers([]);
+    }, [])
+  );
 
   const fetchUsers = async () => {
     try {
