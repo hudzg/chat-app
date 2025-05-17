@@ -8,6 +8,8 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect } from "react";
 import { useCall } from "../../../context/callContext";
+import { Feather, MaterialIcons } from "@expo/vector-icons";
+
 
 export default function CallScreen() {
   const params = useLocalSearchParams();
@@ -29,16 +31,25 @@ export default function CallScreen() {
     }
   }, [isCalling, incomingCall]);
 
+  const switchCamera = () => {
+    if (localStream) {
+      const videoTrack = localStream.getVideoTracks()[0];
+      if (videoTrack && typeof videoTrack._switchCamera === "function") {
+        videoTrack._switchCamera();
+      }
+    }
+  };
+
   if (incomingCall && !isCaller) {
     return (
       <View style={styles.incomingCallContainer}>
-        <Text style={styles.incomingCallText}>Có cuộc gọi video đến...</Text>
+        <Text style={styles.incomingCallText}>Incomming video call...</Text>
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.acceptButton} onPress={acceptCall}>
-            <Text style={styles.buttonText}>Chấp nhận</Text>
+            <Text style={styles.buttonText}>Accept</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.rejectButton} onPress={rejectCall}>
-            <Text style={styles.buttonText}>Từ chối</Text>
+            <Text style={styles.buttonText}>Reject </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -47,45 +58,31 @@ export default function CallScreen() {
 
   return (
     <View style={styles.fullScreenContainer}>
-      {/* {remoteStream ? (
-        <RTCView streamURL={remoteStream.toURL()} style={styles.remoteVideo} />
-      ) : (
-        <Text style={styles.waitingText}>Đang chờ kết nối...</Text>
-      )}
-      {localStream && (
-        <RTCView streamURL={localStream.toURL()} style={styles.localVideo} />
-      )}
+      <TouchableOpacity
+        style={styles.switchCameraButton}
+        onPress={switchCamera}
+      >
+        <Feather name="refresh-ccw" size={hp(3)} color="white" />
+      </TouchableOpacity>
+
+      <View style={styles.remoteContainer}>
+        {remoteStream ? (
+          <RTCView
+            streamURL={remoteStream.toURL()}
+            style={styles.remoteVideo}
+          />
+        ) : (
+          <Text style={styles.waitingText}>Connecting...</Text>
+        )}
+      </View>
+      <View style={styles.localContainer}>
+        {localStream && (
+          <RTCView streamURL={localStream.toURL()} style={styles.localVideo} />
+        )}
+      </View>
       <TouchableOpacity style={styles.endCallButton} onPress={endCall}>
-        <Text style={styles.endCallText}>Kết thúc cuộc gọi</Text>
-      </TouchableOpacity> */}
-      {localStream && remoteStream ? (
-        <>
-          {/* Phần remoteStream */}
-          <View style={styles.remoteStreamContainer}>
-            <RTCView
-              streamURL={remoteStream.toURL()}
-              style={styles.remoteVideo}
-            />
-          </View>
-
-          {/* Phần localStream */}
-          <View style={styles.localStreamContainer}>
-            <RTCView
-              streamURL={localStream.toURL()}
-              style={styles.localVideo}
-            />
-          </View>
-
-          {/* Phần nút thoát cuộc gọi */}
-          <View style={styles.endCallContainer}>
-            <TouchableOpacity style={styles.endCallButton} onPress={endCall}>
-              <Text style={styles.endCallText}>Kết thúc cuộc gọi</Text>
-            </TouchableOpacity>
-          </View>
-        </>
-      ) : (
-        <Text style={styles.waitingText}>Đang chờ kết nối...</Text>
-      )}
+        <MaterialIcons name="call-end" size={hp(3)} color="white" />
+      </TouchableOpacity>
     </View>
   );
 }
@@ -93,47 +90,48 @@ export default function CallScreen() {
 const styles = StyleSheet.create({
   fullScreenContainer: {
     flex: 1,
-    // backgroundColor: "black",
-    position: "relative",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: "black",
+    width: "100%",
+  },
+  remoteContainer: {
+    flex: 1,
+    backgroundColor: "black",
+    width: "100%",
+    overflow: "hidden",
+  },
+  localContainer: {
+    flex: 1,
+    backgroundColor: "black",
+    width: "100%",
+    overflow: "hidden",
   },
   remoteStreamContainer: {
     ...StyleSheet.absoluteFillObject, // Chiếm toàn bộ không gian
     zIndex: 1,
   },
   remoteVideo: {
+    flex: 1,
     width: "100%",
     height: "100%",
-  },
-  localStreamContainer: {
-    position: "absolute",
-    top: hp(2),
-    right: wp(2),
-    zIndex: 10,
+    objectFit: "cover",
   },
   localVideo: {
-    width: wp(30),
-    height: hp(20),
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: "white",
-    elevation: 10, // Cho Android
+    flex: 1,
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
   },
   endCallContainer: {
     position: "absolute",
-    bottom: hp(5),
     alignSelf: "center",
-    zIndex: 20,
-  },
-  endCallButton: {
-    // position: "absolute",
-    // bottom: hp(5),
-    // alignSelf: "center",
+    bottom: hp(3),
     backgroundColor: "red",
-    paddingVertical: hp(1.5),
-    paddingHorizontal: wp(5),
-    borderRadius: 25,
+    padding: hp(2),
+    borderRadius: 50,
+    zIndex: 10,
+  },
+  videoContainer: {
+    flex: 1,
   },
   endCallText: {
     color: "white",
@@ -151,6 +149,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: hp(5),
   },
+
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-around",
@@ -177,5 +176,16 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: hp(2.5),
     fontWeight: "bold",
+    textAlign: "center",
+    marginTop: hp(25),
+  },
+  switchCameraButton: {
+    position: "absolute",
+    top: hp(5),
+    right: wp(5),
+    backgroundColor: "rgba(0,0,0,0.6)",
+    padding: hp(1.5),
+    borderRadius: 50,
+    zIndex: 10,
   },
 });

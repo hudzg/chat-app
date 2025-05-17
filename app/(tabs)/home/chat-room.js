@@ -6,9 +6,9 @@ import {
   Alert,
   Keyboard,
   StyleSheet,
-  StatusBar
+  StatusBar,
 } from "react-native";
-import {SafeAreaView} from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 import React, { useEffect, useRef, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 // import { StatusBar } from "expo-status-bar";
@@ -21,7 +21,7 @@ import {
 import { Feather } from "@expo/vector-icons";
 import CustomKeyboardView from "../../../components/CustomKeyboardView";
 import { useAuth } from "../../../context/authContext";
-import { getRoomId } from "../../../utils/common";
+import { getRoomId, uploadMediaAsync } from "../../../utils/common";
 import {
   addDoc,
   collection,
@@ -31,8 +31,11 @@ import {
   query,
   setDoc,
   Timestamp,
+  getDoc,
+  updateDoc,
+  arrayUnion,
 } from "firebase/firestore";
-import { db, rtdb } from "../../../firebaseConfig";
+import { db, rtdb, auth } from "../../../firebaseConfig";
 import {
   RTCPeerConnection,
   RTCView,
@@ -135,7 +138,10 @@ export default function ChatRoom() {
     const messageRef = collection(docRef, "messages");
     const q = query(messageRef, orderBy("createdAt", "asc"));
     let unsub = onSnapshot(q, (snapshot) => {
-      let allMessages = snapshot.docs.map((doc) => doc.data());
+      let allMessages = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
       setMessages([...allMessages]);
     });
 
@@ -343,96 +349,43 @@ export default function ChatRoom() {
   // };
 
   const handleSendMessage = async () => {
-      let message = textRef.current.trim();
-      if (!message) return;
-      try {
-        let roomId = getRoomId(user?.userId, item?.userId);
-        const docRef = doc(db, "rooms", roomId);
-        const messageRef = collection(docRef, "messages");
-
-        textRef.current = "";
-        if (inputRef) inputRef?.current?.clear();
-
-        await addDoc(messageRef, {
-          userId: user?.userId,
-          text: message,
-          profileUrl: user?.profileUrl,
-          senderName: user?.username,
-          createdAt: Timestamp.fromDate(new Date()),
-        });
-
-        // 3. Nếu đang chat với bot (item.userId === 'chatgpt-bot'), gọi API và lưu reply
-        if (item?.userId === "chatgpt-bot") {
-             // gọi OpenAI
-             const aiReply = await askChatGPT(message);
-             // lưu câu trả lời AI
-             await addDoc(messageRef, {
-               userId: "chatgpt-bot",
-               text: aiReply,
-               profileUrl: null,
-               senderName: "ChatGPT",
-               createdAt: Timestamp.fromDate(new Date()),
-             });
-           }
-      } catch (e) {
-        Alert.alert("Message", e.message);
-      }
-    };
-
-  const uploadMediaAsync = async (uri, mediaType) => {
+    let message = textRef.current.trim();
+    if (!message) return;
     try {
-      const formData = new FormData();
+      let roomId = getRoomId(user?.userId, item?.userId);
+      const docRef = doc(db, "rooms", roomId);
+      const messageRef = collection(docRef, "messages");
 
-      const filename = uri.split("/").pop();
-      const match = /\.(\w+)$/.exec(filename);
-      const type =
-        mediaType === "video"
-          ? "video/mp4"
-          : match
-          ? `image/${match[1]}`
-          : "image";
+      textRef.current = "";
+      if (inputRef) inputRef?.current?.clear();
 
-      formData.append("file", {
-        uri,
-        name: filename,
-        type,
+      await addDoc(messageRef, {
+        userId: user?.userId,
+        text: message,
+        profileUrl: user?.profileUrl,
+        senderName: user?.username,
+        createdAt: Timestamp.fromDate(new Date()),
       });
 
-      formData.append(
-        "upload_preset",
-        process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET
-      );
-
-      if (mediaType === "video") {
-        formData.append("resource_type", "video");
+      // 3. Nếu đang chat với bot (item.userId === 'chatgpt-bot'), gọi API và lưu reply
+      if (item?.userId === "chatgpt-bot") {
+        // gọi OpenAI
+        const aiReply = await askChatGPT(message);
+        // lưu câu trả lời AI
+        await addDoc(messageRef, {
+          userId: "chatgpt-bot",
+          text: aiReply,
+          profileUrl: null,
+          senderName: "ChatGPT",
+          createdAt: Timestamp.fromDate(new Date()),
+        });
       }
-
-      console.log(formData.get("file"));
-
-      const response = await fetch(
-        `https://api.cloudinary.com/v1_1/${process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME}/${mediaType}/upload`,
-        {
-          method: "POST",
-          body: formData,
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.message || "Upload failed");
-      }
-
-      console.log("Upload response:", data);
-      return data.secure_url;
-    } catch (error) {
-      console.error("Upload error:", error);
-      throw error;
+    } catch (e) {
+      Alert.alert("Message", e.message);
     }
   };
+
+  //uploadMediaAsync is in utils/common.js
 
   const handleSendMedia = async () => {
     try {
@@ -524,9 +477,82 @@ export default function ChatRoom() {
   //   );
   // }
 
+  const handleOpenMap = () => {
+    let roomId = getRoomId(user?.userId, item?.userId);
+    // console.log("this is chat room id: ", roomId);
+    router.push({
+      pathname: "/maps",
+      params: {
+        chatRoomId: roomId,
+      },
+    });
+  };
+
+  const deleteOneMessage = async (roomId, messageId, deleteForEveryone = false) => {
+    try {
+      const messageRef = doc(db, "rooms", roomId, "messages", messageId);
+      const messageDoc = await getDoc(messageRef);
+  
+      const messageData = messageDoc.data();
+      if (!messageData) {
+        throw new Error("Message not found");
+      }
+      
+      if (deleteForEveryone) {
+        await updateDoc(messageRef, {
+          text: "This message was deleted",
+          type: "deleted",
+          deletedBy: user?.userId,
+          isDeletedForEveryone: true,
+        });
+      } else {
+        const deletedFor = messageData.deletedFor || [];
+      if (!deletedFor.includes(user?.userId)) {
+        await updateDoc(messageRef, {
+          deletedFor: [...deletedFor, user?.userId]
+        });
+      }
+      }
+    } catch (error) {
+      console.error("Error deleting message:", error);
+      throw error;
+    }
+  };
+
+  const handleDeleteOneMessage = async (
+      messageId,
+      deleteForEveryone = false
+    ) => {
+      // console.log("this is messageId: ", messageId);
+      Alert.alert(
+        "Delete message",
+        `Are you sure you want to delete this message${
+          deleteForEveryone ? " for everyone" : ""
+        }?`,
+        [
+          {
+            text: "Cancel",
+            style: "cancel",
+          },
+          {
+            text: "Delete",
+            style: "destructive",
+            onPress: async () => {
+              try {
+                let roomId = getRoomId(user?.userId, item?.userId);
+                await deleteOneMessage(roomId, messageId, deleteForEveryone);
+              } catch (error) {
+                Alert.alert("Error", "Cannot delete message");
+                console.error("Error deleting message:", error);}
+            },
+          },
+        ]
+      );
+    };
+
   return (
     //<SafeAreaView style={styles.container}>
-      <CustomKeyboardView inChat={true}>
+    <CustomKeyboardView inChat={true}>
       <StatusBar backgroundColor="#fff" barStyle="dark-content" />
       <View className="flex-1 bg-white">
         <ChatRoomHeader
@@ -544,23 +570,30 @@ export default function ChatRoom() {
               scrollViewRef={scrollViewRef}
               currentUser={user}
               messages={messages}
+              onDeleteMessage={handleDeleteOneMessage}
             />
           </View>
           <View className="pt-2 px-1" style={{ marginBottom: hp(1.7) }}>
             <View className="flex-row justify-between items-center mx-3">
               <View className="flex-row">
                 <TouchableOpacity
-                  onPress={() => handleSendMedia()}
+                  onPress={() => handleOpenMap()}
                   className="bg-neutral-200 p-2 mr-2 rounded-full"
                 >
-                  <Feather name="image" size={hp(2.7)} color="#737373" />
+                  <Feather name="map" size={hp(2.7)} color="mediumpurple" />
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => handleSendMedia()}
                   className="bg-neutral-200 p-2 mr-2 rounded-full"
                 >
-                  <Feather name="video" size={hp(2.7)} color="#737373" />
+                  <Feather name="image" size={hp(2.7)} color="mediumpurple" />
                 </TouchableOpacity>
+                {/* <TouchableOpacity
+                  onPress={() => handleSendMedia()}
+                  className="bg-neutral-200 p-2 mr-2 rounded-full"
+                >
+                  <Feather name="video" size={hp(2.7)} color="mediumpurple" />
+                </TouchableOpacity> */}
               </View>
               <View className="flex-1 flex-row justify-between bg-white border p-2 border-neutral-300 rounded-full pl-5">
                 <TextInput
@@ -574,7 +607,7 @@ export default function ChatRoom() {
                   onPress={handleSendMessage}
                   className="bg-neutral-200 p-2 mr-[1px] rounded-full"
                 >
-                  <Feather name="send" size={hp(2.7)} color="#737373" />
+                  <Feather name="send" size={hp(2.7)} color="mediumpurple" />
                 </TouchableOpacity>
               </View>
             </View>
@@ -583,7 +616,6 @@ export default function ChatRoom() {
       </View>
     </CustomKeyboardView>
     //</SafeAreaView>
-    
   );
 }
 

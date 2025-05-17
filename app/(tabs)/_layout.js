@@ -14,6 +14,8 @@ export default function _layout() {
   const isChatScreen = segments.includes("chat-room");
   const isGroupChatScreen = segments.includes("group-chat");
   const isInMap = segments.includes("maps");
+  const isMediaViewer = segments.includes("mediaViewer");
+  const isCalling = segments.includes("call-screen");
   const { top } = useSafeAreaInsets;
   const insets = useSafeAreaInsets();
   // console.log(isChatScreen);
@@ -22,7 +24,7 @@ export default function _layout() {
     <Tabs
       screenOptions={{
         tabBarStyle: {
-          display: isChatScreen || isGroupChatScreen || isInMap ? "none" : "flex",
+          display: isChatScreen || isGroupChatScreen || isInMap || isMediaViewer || isCalling ? "none" : "flex",
         },
         tabBarActiveTintColor: Colors[colorScheme ?? "dark"].tint,
         tabBarInactiveTintColor: Colors[colorScheme ?? "light"].tint,
@@ -153,6 +155,7 @@ export default function _layout() {
         name="createGroup"
         options={{
           href: null,
+          headerShown: false,
         }}
       />
 
@@ -160,6 +163,7 @@ export default function _layout() {
         name="addMembers"
         options={{
           href: null,
+          headerShown: false,
         }}
       />
 
@@ -167,6 +171,7 @@ export default function _layout() {
         name="viewMembers"
         options={{
           href: null,
+          headerShown: false,
         }}
       />
       
@@ -175,6 +180,15 @@ export default function _layout() {
         options={{
           href: null,
           headerShown: false,
+        }}
+      />
+
+      <Tabs.Screen
+        name="mediaViewer"
+        options={{
+          href: null,
+          headerShown: false,
+          tabBarStyle: { display: 'none' }
         }}
       />
 
