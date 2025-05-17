@@ -43,26 +43,26 @@ const configuration = {
     {
       urls: "stun:stun.l.google.com:19302",
     },
-    // {
-    //   urls: "turn:global.relay.metered.ca:80",
-    //   username: "02f239a44191a571afc2766c",
-    //   credential: "eFW0JEJAEWcMnrmu",
-    // },
-    // {
-    //   urls: "turn:global.relay.metered.ca:80?transport=tcp",
-    //   username: "02f239a44191a571afc2766c",
-    //   credential: "eFW0JEJAEWcMnrmu",
-    // },
-    // {
-    //   urls: "turn:global.relay.metered.ca:443",
-    //   username: "02f239a44191a571afc2766c",
-    //   credential: "eFW0JEJAEWcMnrmu",
-    // },
-    // {
-    //   urls: "turns:global.relay.metered.ca:443?transport=tcp",
-    //   username: "02f239a44191a571afc2766c",
-    //   credential: "eFW0JEJAEWcMnrmu",
-    // },
+    {
+      urls: "turn:global.relay.metered.ca:80",
+      username: "02f239a44191a571afc2766c",
+      credential: "eFW0JEJAEWcMnrmu",
+    },
+    {
+      urls: "turn:global.relay.metered.ca:80?transport=tcp",
+      username: "02f239a44191a571afc2766c",
+      credential: "eFW0JEJAEWcMnrmu",
+    },
+    {
+      urls: "turn:global.relay.metered.ca:443",
+      username: "02f239a44191a571afc2766c",
+      credential: "eFW0JEJAEWcMnrmu",
+    },
+    {
+      urls: "turns:global.relay.metered.ca:443?transport=tcp",
+      username: "02f239a44191a571afc2766c",
+      credential: "eFW0JEJAEWcMnrmu",
+    },
   ],
 };
 
@@ -104,7 +104,7 @@ export function CallProvider({ children }) {
           console.log("call.to", call.to);
           console.log("userId", user.userId);
           // console.log("call.offer", call.offer);
-          console.log("call.answer", call.answer);
+          // console.log("call.answer", call.answer);
           if (call.offer && call.to === user.userId && !call.answer) {
             console.log("hung");
             const callerDoc = doc(db, "users", call.from);
@@ -159,6 +159,7 @@ export function CallProvider({ children }) {
 
       // Handle ICE connection state changes
       newPC.oniceconnectionstatechange = () => {
+        console.log("ICE connection state changed:", newPC.iceConnectionState);
         if (newPC.iceConnectionState === "failed") {
           console.log("ICE connection failed");
           newPC.restartIce();
@@ -204,11 +205,15 @@ export function CallProvider({ children }) {
         }
       });
 
+      let addedCandidateCount = 0;
+
       // Listen for remote candidates
       onValue(ref(rtdb, `calls/${callId}/calleeCandidates`), (snapshot) => {
         snapshot.forEach((childSnapshot) => {
           const candidate = childSnapshot.val();
           pc.current?.addIceCandidate(candidate);
+          addedCandidateCount++;
+          console.log("🔢 Total candidates added:", addedCandidateCount);
         });
       });
     } catch (error) {
@@ -314,7 +319,6 @@ export function CallProvider({ children }) {
         startCall,
         acceptCall,
         endCall,
-        handleIncomingCall,
       }}
     >
       {children}

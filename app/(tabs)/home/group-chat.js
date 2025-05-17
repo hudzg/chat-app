@@ -24,6 +24,7 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
+import { useGroupCall } from "../../../context/groupCallContext";
 
 export default function GroupChat() {
   const item = useLocalSearchParams();
@@ -34,6 +35,7 @@ export default function GroupChat() {
   const textRef = useRef("");
   const inputRef = useRef(null);
   const scrollViewRef = useRef(null);
+  const { startCall } = useGroupCall();
 
   useEffect(() => {
     const messageRef = collection(db, "groups", item.id, "messages");
@@ -138,35 +140,31 @@ export default function GroupChat() {
   };
 
   const handleLeaveGroup = () => {
-    Alert.alert(
-      "Leave group",
-      "Are you sure you want to leave this group?",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
+    Alert.alert("Leave group", "Are you sure you want to leave this group?", [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Leave",
+        style: "leave",
+        onPress: async () => {
+          try {
+            await leaveGroup(item.id, user.userId);
+            Alert.alert("Success", "You left the group", [
+              {
+                text: "OK",
+                onPress: () => router.back(),
+              },
+            ]);
+          } catch (error) {
+            Alert.alert("Error", "Cannot leave group");
+            console.error("Error leaving group:", error);
+          }
         },
-        {
-          text: "Leave",
-          style: "leave",
-          onPress: async () => {
-            try {
-              await leaveGroup(item.id, user.userId);
-              Alert.alert("Success", "You left the group", [
-                {
-                  text: "OK",
-                  onPress: () => router.back(),
-                },
-              ]);
-            } catch (error) {
-              Alert.alert("Error", "Cannot leave group");
-              console.error("Error leaving group:", error);
-            }
-          },
-        },
-      ]
-    );
-  }
+      },
+    ]);
+  };
 
   const handleDeleteOneMessage = async (
     messageId,
@@ -207,6 +205,11 @@ export default function GroupChat() {
     });
   };
 
+  const handleStartCall = async () => {
+    await startCall(item.id, user.userId);
+    router.push("/home/group-call-screen");
+  };
+
   return (
     <CustomKeyboardView inChat={true}>
       <View className="flex-1 bg-white">
@@ -220,6 +223,7 @@ export default function GroupChat() {
           onViewMembers={handleViewMembers}
           onDeleteChat={handleDeleteChat}
           onLeaveGroup={handleLeaveGroup}
+          startCall={handleStartCall}
         />
         <View className="flex-1 bg-neutral-100">
           <MessageList
@@ -233,7 +237,7 @@ export default function GroupChat() {
           <View className="pt-2 px-1" style={{ marginBottom: hp(1.7) }}>
             <View className="flex-row justify-between items-center mx-3">
               <View className="flex-row">
-              <TouchableOpacity
+                <TouchableOpacity
                   onPress={() => handleSendPosition()}
                   className="bg-neutral-200 p-2 mr-2 rounded-full"
                 >

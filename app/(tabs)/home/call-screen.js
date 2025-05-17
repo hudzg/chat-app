@@ -47,7 +47,7 @@ export default function CallScreen() {
 
   return (
     <View style={styles.fullScreenContainer}>
-      {remoteStream ? (
+      {/* {remoteStream ? (
         <RTCView streamURL={remoteStream.toURL()} style={styles.remoteVideo} />
       ) : (
         <Text style={styles.waitingText}>Đang chờ kết nối...</Text>
@@ -57,7 +57,35 @@ export default function CallScreen() {
       )}
       <TouchableOpacity style={styles.endCallButton} onPress={endCall}>
         <Text style={styles.endCallText}>Kết thúc cuộc gọi</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
+      {localStream && remoteStream ? (
+        <>
+          {/* Phần remoteStream */}
+          <View style={styles.remoteStreamContainer}>
+            <RTCView
+              streamURL={remoteStream.toURL()}
+              style={styles.remoteVideo}
+            />
+          </View>
+
+          {/* Phần localStream */}
+          <View style={styles.localStreamContainer}>
+            <RTCView
+              streamURL={localStream.toURL()}
+              style={styles.localVideo}
+            />
+          </View>
+
+          {/* Phần nút thoát cuộc gọi */}
+          <View style={styles.endCallContainer}>
+            <TouchableOpacity style={styles.endCallButton} onPress={endCall}>
+              <Text style={styles.endCallText}>Kết thúc cuộc gọi</Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      ) : (
+        <Text style={styles.waitingText}>Đang chờ kết nối...</Text>
+      )}
     </View>
   );
 }
@@ -70,27 +98,38 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  remoteStreamContainer: {
+    ...StyleSheet.absoluteFillObject, // Chiếm toàn bộ không gian
+    zIndex: 1,
+  },
   remoteVideo: {
     width: "100%",
     height: "100%",
-    zIndex: 1,
+  },
+  localStreamContainer: {
     position: "absolute",
+    top: hp(2),
+    right: wp(2),
+    zIndex: 10,
   },
   localVideo: {
     width: wp(30),
     height: hp(20),
-    position: "absolute",
-    top: hp(2),
-    right: wp(2),
     borderRadius: 10,
     borderWidth: 2,
     borderColor: "white",
-    zIndex: 2,
+    elevation: 10, // Cho Android
   },
-  endCallButton: {
+  endCallContainer: {
     position: "absolute",
     bottom: hp(5),
     alignSelf: "center",
+    zIndex: 20,
+  },
+  endCallButton: {
+    // position: "absolute",
+    // bottom: hp(5),
+    // alignSelf: "center",
     backgroundColor: "red",
     paddingVertical: hp(1.5),
     paddingHorizontal: wp(5),
