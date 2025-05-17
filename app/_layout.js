@@ -17,7 +17,8 @@ import { NativeModules } from "react-native";
 const { CallModule } = NativeModules;
 import { doc, getDoc, setDoc, arrayUnion } from "firebase/firestore";
 import { db } from "../firebaseConfig";
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { GroupCallProvider } from "../context/groupCallContext";
 
 const MainLayout = () => {
   const { isAuthenticated, user } = useAuth();
@@ -27,9 +28,9 @@ const MainLayout = () => {
 
   useEffect(() => {
     if (typeof isAuthenticated == "undefined") return;
-    const   inApp = segments[0] == "(tabs)";
+    const inApp = segments[0] == "(tabs)";
     if (isAuthenticated && !inApp) {
-      router.replace('/(tabs)/home');
+      router.replace("/(tabs)/home");
     } else if (isAuthenticated == false) {
       router.replace("signIn");
     }
@@ -127,7 +128,7 @@ const MainLayout = () => {
     return unsubscribe;
   }, []);
 
-  return <Slot/>;//<Stack screenOptions = {{headerShown: false}}/>;
+  return <Slot />; //<Stack screenOptions = {{headerShown: false}}/>;
 };
 
 export default function RootLayout() {
@@ -135,9 +136,11 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <MenuProvider>
         <AuthContextProvider>
-          <CallProvider>
-            <MainLayout />
-          </CallProvider>
+          <GroupCallProvider>
+            <CallProvider>
+              <MainLayout />
+            </CallProvider>
+          </GroupCallProvider>
         </AuthContextProvider>
       </MenuProvider>
     </SafeAreaProvider>

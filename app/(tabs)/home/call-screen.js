@@ -105,6 +105,10 @@ const styles = StyleSheet.create({
     width: "100%",
     overflow: "hidden",
   },
+  remoteStreamContainer: {
+    ...StyleSheet.absoluteFillObject, // Chiếm toàn bộ không gian
+    zIndex: 1,
+  },
   remoteVideo: {
     flex: 1,
     width: "100%",
@@ -117,7 +121,7 @@ const styles = StyleSheet.create({
     height: "100%",
     objectFit: "cover",
   },
-  endCallButton: {
+  endCallContainer: {
     position: "absolute",
     alignSelf: "center",
     bottom: hp(3),
