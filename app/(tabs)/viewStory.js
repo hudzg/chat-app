@@ -10,281 +10,263 @@ import {
   StatusBar,
   SafeAreaView,
   Platform,
+  PanResponder,
+  Alert,
 } from 'react-native';
-import {router} from 'expo-router'
+import {router, useLocalSearchParams} from 'expo-router'
+import { collection, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
+import { db } from '../../firebaseConfig';
+import { useAuth } from '../../context/authContext';
 
 const { width, height } = Dimensions.get('window');
 
-// Dữ liệu mẫu cho story
-const DEMO_STORIES = [
-  {
-    id: '1',
-    user: 'Trần Vũ Đức Huy',
-    avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-    stories: [
-      {
-        id: '1-1',
-        type: 'image',
-        url: 'https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
-        duration: 5000, // milliseconds
-        seen: false,
-        timestamp: '2 giờ trước',
-      },
-    ],
-  },
-  {
-    id: '2',
-    user: 'Lâm Nguyễn Hữu',
-    avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-    stories: [
-      {
-        id: '2-1',
-        type: 'image',
-        url: 'https://images.unsplash.com/photo-1519750783826-e2420f4d687f?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
-        duration: 5000,
-        seen: false,
-        timestamp: '5 giờ trước',
-      },
-      {
-        id: '2-2',
-        type: 'image',
-        url: 'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
-        duration: 5000,
-        seen: false,
-        timestamp: '5 giờ trước',
-      },
-    ],
-  },
-  {
-    id: '3',
-    user: 'Hoàng Mạnh Duy',
-    avatar: 'https://randomuser.me/api/portraits/men/46.jpg',
-    stories: [
-      {
-        id: '3-1',
-        type: 'image',
-        url: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
-        duration: 5000,
-        seen: false,
-        timestamp: '1 ngày trước',
-      },
-      {
-        id: '3-2',
-        type: 'image',
-        url: 'https://images.unsplash.com/photo-1515238152791-8216bfdf89a7?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
-        duration: 5000,
-        seen: false,
-        timestamp: '1 ngày trước',
-      },
-    ],
-  },
-];
-
-const StoryViewerScreen = ({ route, navigation }) => {
-  // Trong thực tế, bạn sẽ nhận các tham số từ navigation
-  // const { initialStoryIndex } = route.params || { initialStoryIndex: 0 };
-  const initialStoryIndex = 0;
-
-  const [currentUserIndex, setCurrentUserIndex] = useState(initialStoryIndex);
+const StoryViewerScreen = () => {
+  const { userId } = useLocalSearchParams();
+  const [userStories, setUserStories] = useState([]); // stories của user được chọn
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [loading, setLoading] = useState(true);
   const progressAnimation = useRef(new Animated.Value(0)).current;
   const animation = useRef(null);
+  const [userInfo, setUserInfo] = useState({});
+  const pan = useRef(new Animated.ValueXY()).current;
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        return Math.abs(gestureState.dy) > 10;
+      },
+      onPanResponderMove: (evt, gestureState) => {}, // Không cần hiệu ứng
+      onPanResponderRelease: (evt, gestureState) => {
+        if (gestureState.dy > 120) {
+          closeStory();
+        }
+      },
+    })
+  ).current;
+  const { user } = useAuth();
+  const [showMenu, setShowMenu] = useState(false);
 
-  const currentUser = DEMO_STORIES[currentUserIndex];
-  const currentStory = currentUser.stories[currentStoryIndex];
-
-  
   useEffect(() => {
-    // Cấu hình status bar thay vì ẩn nó
-    StatusBar.setBarStyle('light-content');
-    if (Platform.OS === 'android') {
-      StatusBar.setBackgroundColor('transparent');
-      StatusBar.setTranslucent(true);
-    }
-    return () => {
-      // Khôi phục cài đặt mặc định khi rời khỏi màn hình
-      StatusBar.setBarStyle('dark-content');
-      if (Platform.OS === 'android') {
-        StatusBar.setBackgroundColor('#ffffff');
-        StatusBar.setTranslucent(false);
+    // Lấy stories của userId từ Firestore
+    const unsubscribe = onSnapshot(collection(db, 'stories'), (snapshot) => {
+      const allStories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const now = Date.now();
+      let filtered = allStories.filter(story => {
+        if (!story.createdAt) return false;
+        const created = story.createdAt.seconds ? story.createdAt.seconds * 1000 : new Date(story.createdAt).getTime();
+        return now - created < 24 * 60 * 60 * 1000;
+      });
+      if (userId) {
+        filtered = filtered.filter(story => story.userId === userId);
       }
-    };
-  }, []);
+      filtered.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+      setUserStories(filtered);
+      if (filtered.length > 0) {
+        setUserInfo({
+          avatar: filtered[0].avatar,
+          username: filtered[0].username,
+        });
+      }
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, [userId]);
 
   useEffect(() => {
-    // Reset và bắt đầu animation mới khi story thay đổi
     progressAnimation.setValue(0);
     startAnimation();
-
     return () => {
-      if (animation.current) {
-        animation.current.stop();
-      }
+      if (animation.current) animation.current.stop();
     };
-  }, [currentUserIndex, currentStoryIndex]);
+  }, [currentStoryIndex, userStories]);
+
+  useEffect(() => {
+    // Reset lại vị trí pan khi mở story mới
+    pan.setValue({ x: 0, y: 0 });
+  }, [userStories, currentStoryIndex]);
+
+  useEffect(() => {
+    setCurrentStoryIndex(0);
+  }, [userStories, userId]);
 
   const startAnimation = () => {
-    if (isPaused) return;
-
+    if (isPaused || !userStories.length) return;
     animation.current = Animated.timing(progressAnimation, {
       toValue: 1,
-      duration: currentStory.duration,
+      duration: 5000,
       useNativeDriver: false,
     });
-
     animation.current.start(({ finished }) => {
-      if (finished) {
-        nextStory();
-      }
+      if (finished) nextStory();
     });
   };
 
   const pauseAnimation = () => {
-    if (animation.current) {
-      animation.current.stop();
-    }
+    if (animation.current) animation.current.stop();
   };
 
   const nextStory = () => {
-    // Nếu còn story của user hiện tại
-    if (currentStoryIndex < currentUser.stories.length - 1) {
+    if (currentStoryIndex < userStories.length - 1) {
       setCurrentStoryIndex(currentStoryIndex + 1);
     } else {
-      // Chuyển sang user tiếp theo
-      if (currentUserIndex < DEMO_STORIES.length - 1) {
-        setCurrentUserIndex(currentUserIndex + 1);
-        setCurrentStoryIndex(0);
-      } else {
-        // Đã xem hết tất cả story, quay lại màn hình trước
-        closeStory();
-      }
+      closeStory();
     }
   };
 
   const previousStory = () => {
-    // Nếu không phải story đầu tiên của user hiện tại
     if (currentStoryIndex > 0) {
       setCurrentStoryIndex(currentStoryIndex - 1);
-    } else {
-      // Quay lại user trước đó
-      if (currentUserIndex > 0) {
-        setCurrentUserIndex(currentUserIndex - 1);
-        setCurrentStoryIndex(DEMO_STORIES[currentUserIndex - 1].stories.length - 1);
-      }
     }
   };
 
   const handlePress = (evt) => {
     const x = evt.nativeEvent.locationX;
-    
-    // Nhấn vào 1/3 màn hình bên trái để quay lại
-    if (x < width / 3) {
-      previousStory();
-    } 
-    // Nhấn vào 1/3 màn hình bên phải để tiếp tục
-    else if (x > (width * 2) / 3) {
-      nextStory();
-    } 
-    // Nhấn vào giữa màn hình để tạm dừng/tiếp tục
+    if (x < width / 3) previousStory();
+    else if (x > (width * 2) / 3) nextStory();
     else {
       setIsPaused(!isPaused);
-      if (isPaused) {
-        startAnimation();
-      } else {
-        pauseAnimation();
-      }
+      if (isPaused) startAnimation();
+      else pauseAnimation();
     }
   };
 
   const closeStory = () => {
-    // Trong thực tế, bạn sẽ sử dụng navigation.goBack()
+    pan.setValue({ x: 0, y: 0 });
     router.replace('(tabs)/stories');
   };
 
+  const handleDeleteStory = async () => {
+    try {
+      await deleteDoc(doc(db, 'stories', userStories[currentStoryIndex].id));
+      // Nếu còn story khác thì chuyển sang story tiếp theo, nếu không thì đóng
+      if (currentStoryIndex < userStories.length - 1) {
+        setCurrentStoryIndex(currentStoryIndex + 1);
+      } else if (currentStoryIndex > 0) {
+        setCurrentStoryIndex(currentStoryIndex - 1);
+      } else {
+        closeStory();
+      }
+    } catch (e) {
+      Alert.alert('Lỗi', 'Không thể xóa story');
+    }
+  };
+
   const renderProgressBars = () => {
-    const storiesCount = currentUser.stories.length;
+    const storiesCount = userStories.length;
     const progressBarWidth = (width - (storiesCount + 1) * 4) / storiesCount;
-    
     return (
       <View style={styles.progressContainer}>
-        {currentUser.stories.map((story, index) => {
-          return (
-            <View key={story.id} style={[styles.progressBar, { width: progressBarWidth }]}>
-              {index < currentStoryIndex ? (
-                // Các story đã xem - hiển thị đầy đủ
-                <View style={[styles.activeProgressBar, { width: '100%' }]} />
-              ) : index === currentStoryIndex ? (
-                // Story hiện tại - hiển thị animation
-                <Animated.View
-                  style={[
-                    styles.activeProgressBar,
-                    {
-                      width: progressAnimation.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: ['0%', '100%'],
-                      }),
-                    },
-                  ]}
-                />
-              ) : (
-                // Các story chưa xem - hiển thị trống
-                <View style={[styles.activeProgressBar, { width: '0%' }]} />
-              )}
-            </View>
-          );
-        })}
+        {userStories.map((story, index) => (
+          <View key={story.id} style={[styles.progressBar, { width: progressBarWidth }]}> 
+            {index < currentStoryIndex ? (
+              <View style={[styles.activeProgressBar, { width: '100%' }]} />
+            ) : index === currentStoryIndex ? (
+              <Animated.View
+                style={[
+                  styles.activeProgressBar,
+                  {
+                    width: progressAnimation.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: ['0%', '100%'],
+                    }),
+                  },
+                ]}
+              />
+            ) : (
+              <View style={[styles.activeProgressBar, { width: '0%' }]} />
+            )}
+          </View>
+        ))}
       </View>
     );
   };
 
+  // Thêm hàm tính số giờ trước
+  function getTimeAgo(createdAt) {
+    if (!createdAt) return '';
+    const now = Date.now();
+    const created = createdAt.seconds ? createdAt.seconds * 1000 : new Date(createdAt).getTime();
+    const diffMs = now - created;
+    const diffH = Math.floor(diffMs / (1000 * 60 * 60));
+    if (diffH < 1) return 'Vừa xong';
+    if (diffH === 1) return '1 giờ trước';
+    return `${diffH} giờ trước`;
+  }
+
+  const openMenu = () => setShowMenu(true);
+  const closeMenu = () => setShowMenu(false);
+
+  if (loading) {
+    return <View style={{flex:1, justifyContent:'center', alignItems:'center', backgroundColor:'#000'}}><Text style={{color:'#fff'}}>Đang tải story...</Text></View>;
+  }
+  if (!userStories.length) {
+    return <View style={{flex:1, justifyContent:'center', alignItems:'center', backgroundColor:'#000'}}><Text style={{color:'#fff'}}>Không có story nào</Text></View>;
+  }
+
+  const currentStory = userStories[currentStoryIndex];
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor="#fff" barStyle="dark-content" />
-      <TouchableOpacity
-        activeOpacity={1}
-        style={styles.container}
-        onPress={handlePress}
-      >
+      <View style={styles.storyWrapper} {...panResponder.panHandlers}>
         <Image
-          source={{ uri: currentStory.url }}
+          source={{ uri: currentStory.mediaUrl }}
           style={styles.storyImage}
           resizeMode="cover"
         />
-        
-        <View style={styles.overlay}>
-          {/* Thanh tiến trình */}
-          
-          
-          {/* Header với thông tin người dùng */}
-          <View>
-              {renderProgressBars()}
-              <View style={styles.header}>
-              <View style={styles.userInfo}>
-                <Image source={{ uri: currentUser.avatar }} style={styles.avatar} />
-                <View style={styles.textContainer}>
-                  <Text style={styles.username}>{currentUser.user}</Text>
-                  <Text style={styles.timestamp}>{currentStory.timestamp}</Text>
-                </View>
+        {/* Overlay header sát trên cùng */}
+        <View style={styles.overlayHeader} pointerEvents="box-none">
+          {renderProgressBars()}
+          <View style={styles.header}>
+            <View style={styles.userInfo}>
+              <Image source={{ uri: userInfo.avatar }} style={styles.avatar} />
+              <View style={styles.textContainer}>
+                <Text style={styles.username}>{currentStory.username || userInfo.username || ''}</Text>
+                <Text style={styles.storyTime}>{getTimeAgo(currentStory.createdAt)}</Text>
               </View>
-              
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              {currentStory.userId === user?.userId && (
+                <TouchableOpacity onPress={openMenu} style={styles.menuButton}>
+                  <Text style={styles.menuButtonText}>⋯</Text>
+                </TouchableOpacity>
+              )}
               <TouchableOpacity onPress={closeStory} style={styles.closeButton}>
                 <Text style={styles.closeButtonText}>✕</Text>
-              </TouchableOpacity>
-          </View>
-          </View>
-          
-          {/* Footer với các tùy chọn tương tác */}
-          <View style={styles.footer}>
-            <View style={styles.replyContainer}>
-              <Text style={styles.replyText}>Gửi tin nhắn</Text>
-              <TouchableOpacity style={styles.sendButton}>
-                <Text style={styles.sendButtonText}>↑</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
-      </TouchableOpacity>
+        {/* Footer với gửi tin nhắn */}
+        <View style={styles.footer}>
+          <View style={styles.replyContainerStrong}>
+            <Text style={styles.replyTextStrong}>Gửi tin nhắn</Text>
+            <TouchableOpacity style={styles.sendButtonStrong}>
+              <Text style={styles.sendButtonTextStrong}>↑</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        {/* Touchable toàn màn hình để điều hướng story */}
+        <TouchableOpacity
+          activeOpacity={1}
+          style={styles.touchableArea}
+          onPress={handlePress}
+        />
+        {/* Menu xóa story */}
+        {showMenu && (
+          <View style={styles.menuOverlay} pointerEvents="box-none">
+            <TouchableOpacity style={styles.menuBackdrop} onPress={closeMenu} />
+            <View style={styles.menuBox}>
+              <TouchableOpacity onPress={() => { closeMenu(); handleDeleteStory(); }} style={styles.menuItem}>
+                <Text style={styles.menuItemText}>Xóa story</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={closeMenu} style={styles.menuItem}>
+                <Text style={[styles.menuItemText, { color: '#888' }]}>Hủy</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+      </View>
     </SafeAreaView>
   );
 };
@@ -295,14 +277,106 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
     paddingTop: 10,
   },
+  storyWrapper: {
+    flex: 1,
+    position: 'relative',
+  },
   storyImage: {
     width,
     height,
     position: 'absolute',
   },
-  overlay: {
+  overlayHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
+    paddingTop: 10,
+    paddingHorizontal: 0,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: 8,
+  },
+  userInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  avatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 2,
+    borderColor: '#1877f2',
+  },
+  textContainer: {
+    marginLeft: 10,
+  },
+  username: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  storyTime: {
+    color: '#eee',
+    fontSize: 12,
+    marginTop: 2,
+  },
+  closeButton: {
+    width: 30,
+    height: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  closeButtonText: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  footer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 10,
+    paddingBottom: 20,
+    backgroundColor: 'transparent',
+  },
+  replyContainerStrong: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 24,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    marginHorizontal: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  replyTextStrong: {
+    color: '#000',
     flex: 1,
-    justifyContent: 'space-between'
+    fontSize: 14,
+  },
+  sendButtonStrong: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#1877f2',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sendButtonTextStrong: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   progressContainer: {
     flexDirection: 'row',
@@ -325,75 +399,50 @@ const styles = StyleSheet.create({
     left: 0,
     top: 0,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'start',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-
-  },
-  userInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 2,
-    borderColor: '#1877f2',
-  },
-  textContainer: {
-    marginLeft: 10,
-  },
-  username: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  timestamp: {
-    color: '#eee',
-    fontSize: 12,
-  },
-  closeButton: {
-    width: 30,
-    height: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  closeButtonText: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  footer: {
-    paddingHorizontal: 16,
-    paddingBottom: 40
-  },
-  replyContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 24,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-  },
-  replyText: {
-    color: '#fff',
+  touchableArea: {
     flex: 1,
-    fontSize: 14,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
-  sendButton: {
+  menuButton: {
+    marginLeft: 10,
     width: 30,
     height: 30,
-    borderRadius: 15,
-    backgroundColor: '#1877f2',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  sendButtonText: {
+  menuButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 28,
+    fontWeight: 'bold',
+  },
+  menuOverlay: {
+    position: 'absolute',
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.2)',
+    justifyContent: 'flex-end',
+    zIndex: 100,
+  },
+  menuBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  menuBox: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    padding: 20,
+    marginBottom: 0,
+  },
+  menuItem: {
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  menuItemText: {
+    fontSize: 18,
+    color: '#ff4444',
     fontWeight: 'bold',
   },
 });
