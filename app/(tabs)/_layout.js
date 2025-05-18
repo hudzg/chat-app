@@ -188,7 +188,14 @@ export default function _layout() {
         options={{
           href: null,
           headerShown: false,
-          tabBarStyle: { display: 'none' }
+        }}
+      />
+
+      <Tabs.Screen
+        name="qrCodeScanner"
+        options={{
+          href: null,
+          headerShown: false,
         }}
       />
 

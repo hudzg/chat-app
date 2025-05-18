@@ -18,6 +18,7 @@ import { CustomMenuItem } from "./CustomMenuItem";
 import { AntDesign, Feather } from "@expo/vector-icons";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useRouter } from "expo-router";
+import QRCode from "react-native-qrcode-svg";
 
 const ios = Platform.OS === "ios";
 
@@ -42,6 +43,10 @@ export default function HomeHeader() {
     await logout();
   };
 
+  const openQRCodeScanner = () => {
+    router.push("/qrCodeScanner");
+  }
+
   return (
     <View style={styles.header}>
       <Text style={styles.headerTitle}>Chats</Text>
@@ -49,7 +54,7 @@ export default function HomeHeader() {
         <TouchableOpacity style={styles.iconButton} onPress={() => handleCreateGroup()}>
           <AntDesign name="addusergroup" size={20} color="mediumpurple" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.iconButton} onPress={() => console.log("QR Code pressed")}>
+        <TouchableOpacity style={styles.iconButton} onPress={() => openQRCodeScanner()}>
           <MaterialIcons name="qr-code-scanner" size={20} color="mediumpurple" />
         </TouchableOpacity>
         <Menu>
