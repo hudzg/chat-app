@@ -25,6 +25,7 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
+import { useGroupCall } from "../../../context/groupCallContext";
 
 export default function GroupChat() {
   const item = useLocalSearchParams();
@@ -35,6 +36,7 @@ export default function GroupChat() {
   const textRef = useRef("");
   const inputRef = useRef(null);
   const scrollViewRef = useRef(null);
+  const { startCall } = useGroupCall();
 
   useEffect(() => {
     const messageRef = collection(db, "groups", item.id, "messages");
@@ -203,6 +205,12 @@ export default function GroupChat() {
     });
   };
 
+  const handleStartCall = async () => {
+    await startCall(item.id, user.userId);
+    router.push("/home/group-call-screen");
+  };
+  
+  
   const handleSendMedia = async () => {
     const { status } = await sendMedia(item.id, user.userId);
     if (status !== "granted") {
@@ -226,6 +234,7 @@ export default function GroupChat() {
           onViewMembers={handleViewMembers}
           onDeleteChat={handleDeleteChat}
           onLeaveGroup={handleLeaveGroup}
+          startCall={handleStartCall}
         />
         <View className="flex-1 bg-neutral-100">
           <MessageList

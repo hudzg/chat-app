@@ -12,6 +12,7 @@ export default function HomeStackLayout() {
         }}
       />
       <Stack.Screen name="call-screen" options={{ headerShown: false }} />
+      <Stack.Screen name="group-call-screen" options={{ headerShown: false }} />
     </Stack>
   );
 }

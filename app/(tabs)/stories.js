@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,9 +8,14 @@ import {
   TouchableOpacity,
   StatusBar,
   SafeAreaView,
-  Dimensions
+  Dimensions,
+  Alert
 } from 'react-native';
 import {router} from 'expo-router';
+import * as ImagePicker from "expo-image-picker";
+import { useAuth } from "../../context/authContext";
+import { db } from "../../firebaseConfig";
+import { addDoc, collection, onSnapshot } from "firebase/firestore";
 const { width } = Dimensions.get('window');
 const COLUMN_COUNT = 2;
 const ITEM_WIDTH = (width - 24) / COLUMN_COUNT;
@@ -60,45 +65,205 @@ const stories = [
   },
 ];
 
-const handleAddPress = () => {
-  console.log('TouchableOpacity pressed!');
-  alert('Button pressed!');
-};
-
-const handleViewStoryPress = () => {
-  router.push('(tabs)/viewStory');
-};
-
-const StoryItem = ({ item }) => {
-  if (item.type === 'add') {
-    return (
-      <TouchableOpacity style={styles.storyItem} onPress={handleAddPress}>
-        <Image source={{ uri: item.image }} style={styles.storyImage} />
-        <View style={styles.addIconContainer}>
-          <Text style={styles.plusIcon}>+</Text>
-        </View>
-        <Text style={styles.addText}>{item.title}</Text>
-      </TouchableOpacity>
+const uploadMediaAsync = async (uri, mediaType) => {
+  try {
+    const formData = new FormData();
+    const filename = uri.split("/").pop();
+    const match = /\.(\w+)$/.exec(filename);
+    const type =
+      mediaType === "video"
+        ? "video/mp4"
+        : match
+        ? `image/${match[1]}`
+        : "image";
+    formData.append("file", {
+      uri,
+      name: filename,
+      type,
+    });
+    formData.append(
+      "upload_preset",
+      process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET
     );
+    if (mediaType === "video") {
+      formData.append("resource_type", "video");
+    }
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME}/${mediaType}/upload`,
+      {
+        method: "POST",
+        body: formData,
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || "Upload failed");
+    }
+    return data.secure_url;
+  } catch (error) {
+    console.error("Upload error:", error);
+    throw error;
   }
-
-  return (
-    <TouchableOpacity style={styles.storyItem} onPress={handleViewStoryPress}>
-      <Image source={{ uri: item.image }} style={styles.storyImage} />
-      {item.avatar && (
-        <View style={styles.avatarContainer}>
-          <Image source={{ uri: item.avatar }} style={styles.avatar} />
-          {/* {item.count > 0 && <View style={styles.countBadge}><Text style={styles.countText}>{item.count}</Text></View>} */}
-        </View>
-      )}
-      {item.subtitle && <Text style={styles.subtitle}>{item.subtitle}</Text>}
-      <Text style={styles.username}>{item.user}</Text>
-    </TouchableOpacity>
-
-  );
 };
+
+// Thêm hàm tính số giờ trước
+function getTimeAgo(createdAt) {
+  if (!createdAt) return '';
+  const now = Date.now();
+  const created = createdAt.seconds ? createdAt.seconds * 1000 : new Date(createdAt).getTime();
+  const diffMs = now - created;
+  const diffH = Math.floor(diffMs / (1000 * 60 * 60));
+  if (diffH < 1) return 'Vừa xong';
+  if (diffH === 1) return '1 giờ trước';
+  return `${diffH} giờ trước`;
+}
 
 const StoriesScreen = () => {
+  const { user } = useAuth();
+  const [groupedStories, setGroupedStories] = useState([]);
+  const [myStories, setMyStories] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Lấy story từ Firestore và nhóm theo user
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, 'stories'), (snapshot) => {
+      const now = Date.now();
+      const stories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      // Lọc story trong 24h
+      const validStories = stories.filter(story => {
+        if (!story.createdAt) return false;
+        const created = story.createdAt.seconds ? story.createdAt.seconds * 1000 : new Date(story.createdAt).getTime();
+        return now - created < 24 * 60 * 60 * 1000;
+      });
+      // Nhóm story theo userId
+      const grouped = {};
+      validStories.forEach(story => {
+        if (!grouped[story.userId]) {
+          grouped[story.userId] = {
+            userId: story.userId,
+            username: story.username || 'Người dùng',
+            avatar: story.avatar || 'https://cdn-icons-png.flaticon.com/512/9131/9131478.png',
+            stories: [],
+            latestMedia: story.mediaUrl,
+            latestCreatedAt: story.createdAt,
+          };
+        }
+        grouped[story.userId].stories.push(story);
+        if (!grouped[story.userId].latestCreatedAt || (story.createdAt && story.createdAt > grouped[story.userId].latestCreatedAt)) {
+          grouped[story.userId].latestMedia = story.mediaUrl;
+          grouped[story.userId].latestCreatedAt = story.createdAt;
+        }
+      });
+      const my = grouped[user?.userId] ? [grouped[user.userId]] : [];
+      let others = Object.values(grouped).filter(g => g.userId !== user?.userId);
+      // Sắp xếp others theo latestCreatedAt tăng dần (story mới nhất ở cuối)
+      others = others.sort((a, b) => {
+        const aTime = a.latestCreatedAt?.seconds ? a.latestCreatedAt.seconds : (a.latestCreatedAt ? new Date(a.latestCreatedAt).getTime()/1000 : 0);
+        const bTime = b.latestCreatedAt?.seconds ? b.latestCreatedAt.seconds : (b.latestCreatedAt ? new Date(b.latestCreatedAt).getTime()/1000 : 0);
+        return aTime - bTime;
+      });
+      setMyStories(my);
+      setGroupedStories(others);
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, [user]);
+
+  // Logic thêm story
+  const handleAddStory = useCallback(async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Cần quyền truy cập thư viện ảnh!');
+        return;
+      }
+      const pickerResult = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
+        allowsEditing: true,
+        quality: 1,
+      });
+      if (!pickerResult.canceled) {
+        const mediaUri = pickerResult.assets[0].uri;
+        const mediaType = pickerResult.assets[0].type || 'image';
+        const downloadURL = await uploadMediaAsync(mediaUri, mediaType);
+        // Lưu story vào Firestore
+        const storyRef = collection(db, 'stories');
+        await addDoc(storyRef, {
+          userId: user.userId,
+          username: user.username,
+          avatar: user.profileUrl,
+          mediaUrl: downloadURL,
+          mediaType,
+          createdAt: new Date(),
+        });
+        Alert.alert('Đăng story thành công!');
+      }
+    } catch (error) {
+      console.error('Error uploading story: ', error);
+      Alert.alert('Lỗi', 'Đăng story thất bại');
+    }
+  }, [user]);
+
+  // Render item cho FlatList
+  const renderItem = ({ item, index }) => {
+    // Nếu là ô đầu tiên (của mình)
+    if (index === 0) {
+      if (myStories.length === 0) {
+        // Chưa có story: Add to story
+        return (
+          <TouchableOpacity style={styles.storyItem} onPress={handleAddStory}>
+            <Image source={{ uri: 'https://images.unsplash.com/photo-1511885663737-eea53f6d6187?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80' }} style={styles.storyImage} />
+            <View style={styles.addIconContainer}>
+              <Text style={styles.plusIcon}>+</Text>
+            </View>
+            <Text style={styles.addText}>Add to story</Text>
+          </TouchableOpacity>
+        );
+      } else {
+        // Đã có story: xem lại story của mình, có thể thêm mới
+        const my = myStories[0];
+        return (
+          <TouchableOpacity style={styles.storyItem} onPress={() => router.push({ pathname: '(tabs)/viewStory', params: { userId: my.userId } })}>
+            <Image source={{ uri: my.latestMedia }} style={styles.storyImage} />
+            <View style={styles.avatarContainer}>
+              <Image source={{ uri: my.avatar }} style={styles.avatar} />
+            </View>
+            <Text style={styles.username}>{my.username || 'Me'}</Text>
+            {/* Hiển thị số giờ story mới nhất của mình */}
+            <Text style={styles.storyTime}>{getTimeAgo(my.latestCreatedAt)}</Text>
+            {/* Nút thêm mới story nhỏ */}
+            <TouchableOpacity style={[styles.addIconContainer, { right: 8, left: undefined, top: 8 }]} onPress={handleAddStory}>
+              <Text style={styles.plusIcon}>+</Text>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        );
+      }
+    }
+    // Các ô còn lại: story của người khác
+    return (
+      <TouchableOpacity style={styles.storyItem} onPress={() => router.push({ pathname: '(tabs)/viewStory', params: { userId: item.userId } })}>
+        <Image source={{ uri: item.latestMedia }} style={styles.storyImage} />
+        <View style={styles.avatarContainer}>
+          <Image source={{ uri: item.avatar }} style={styles.avatar} />
+        </View>
+        <Text style={styles.username}>{item.username}</Text>
+        {/* Hiển thị số giờ story mới nhất của user này */}
+        <Text style={styles.storyTime}>{getTimeAgo(item.latestCreatedAt)}</Text>
+      </TouchableOpacity>
+    );
+  };
+
+  // Data cho FlatList: ô đầu là của mình (hoặc add), sau đó là các user khác
+  const flatListData = [myStories.length === 0 ? { type: 'add' } : myStories[0], ...groupedStories];
+
+  if (loading) {
+    return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><Text>Đang tải story...</Text></View>;
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor="#fff" barStyle="dark-content" />
@@ -106,9 +271,9 @@ const StoriesScreen = () => {
         <Text style={styles.headerTitle}>Stories</Text>
       </View>
       <FlatList
-        data={stories}
-        renderItem={({ item }) => <StoryItem item={item} />}
-        keyExtractor={item => item.id}
+        data={flatListData}
+        renderItem={renderItem}
+        keyExtractor={(item, idx) => item.userId ? item.userId : 'add'}
         numColumns={2}
         contentContainerStyle={styles.storiesContainer}
       />
@@ -231,6 +396,17 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.75)',
     textShadowOffset: { width: -1, height: 1 },
     textShadowRadius: 10,
+  },
+  storyTime: {
+    position: 'absolute',
+    bottom: 36,
+    left: 10,
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: 'bold',
+    textShadowColor: 'rgba(0,0,0,0.7)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
   },
 });
 
