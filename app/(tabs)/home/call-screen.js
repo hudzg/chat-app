@@ -1,6 +1,5 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { Feather } from "@expo/vector-icons";
 import { RTCView } from "react-native-webrtc";
 import {
   widthPercentageToDP as wp,
@@ -9,6 +8,8 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect } from "react";
 import { useCall } from "../../../context/callContext";
+import { Feather, MaterialIcons } from "@expo/vector-icons";
+
 
 export default function CallScreen() {
   const params = useLocalSearchParams();
@@ -42,13 +43,13 @@ export default function CallScreen() {
   if (incomingCall && !isCaller) {
     return (
       <View style={styles.incomingCallContainer}>
-        <Text style={styles.incomingCallText}>Có cuộc gọi video đến...</Text>
+        <Text style={styles.incomingCallText}>Incomming video call...</Text>
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.acceptButton} onPress={acceptCall}>
-            <Text style={styles.buttonText}>Chấp nhận</Text>
+            <Text style={styles.buttonText}>Accept</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.rejectButton} onPress={rejectCall}>
-            <Text style={styles.buttonText}>Từ chối</Text>
+            <Text style={styles.buttonText}>Reject </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -71,7 +72,7 @@ export default function CallScreen() {
             style={styles.remoteVideo}
           />
         ) : (
-          <Text style={styles.waitingText}>Đang chờ kết nối...</Text>
+          <Text style={styles.waitingText}>Connecting...</Text>
         )}
       </View>
       <View style={styles.localContainer}>
@@ -80,7 +81,7 @@ export default function CallScreen() {
         )}
       </View>
       <TouchableOpacity style={styles.endCallButton} onPress={endCall}>
-        <Text style={styles.endCallText}>Kết thúc cuộc gọi</Text>
+        <MaterialIcons name="call-end" size={hp(3)} color="white" />
       </TouchableOpacity>
     </View>
   );
@@ -104,6 +105,10 @@ const styles = StyleSheet.create({
     width: "100%",
     overflow: "hidden",
   },
+  remoteStreamContainer: {
+    ...StyleSheet.absoluteFillObject, // Chiếm toàn bộ không gian
+    zIndex: 1,
+  },
   remoteVideo: {
     flex: 1,
     width: "100%",
@@ -116,14 +121,13 @@ const styles = StyleSheet.create({
     height: "100%",
     objectFit: "cover",
   },
-  endCallButton: {
+  endCallContainer: {
     position: "absolute",
     alignSelf: "center",
     bottom: hp(3),
     backgroundColor: "red",
-    paddingVertical: hp(1.5),
-    paddingHorizontal: wp(5),
-    borderRadius: 25,
+    padding: hp(2),
+    borderRadius: 50,
     zIndex: 10,
   },
   videoContainer: {
@@ -172,6 +176,8 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: hp(2.5),
     fontWeight: "bold",
+    textAlign: "center",
+    marginTop: hp(25),
   },
   switchCameraButton: {
     position: "absolute",

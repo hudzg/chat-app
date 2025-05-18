@@ -21,7 +21,7 @@ import {
 import { Feather } from "@expo/vector-icons";
 import CustomKeyboardView from "../../../components/CustomKeyboardView";
 import { useAuth } from "../../../context/authContext";
-import { getRoomId } from "../../../utils/common";
+import { getRoomId, uploadMediaAsync } from "../../../utils/common";
 import {
   addDoc,
   collection,
@@ -385,60 +385,7 @@ export default function ChatRoom() {
     }
   };
 
-  const uploadMediaAsync = async (uri, mediaType) => {
-    try {
-      const formData = new FormData();
-
-      const filename = uri.split("/").pop();
-      const match = /\.(\w+)$/.exec(filename);
-      const type =
-        mediaType === "video"
-          ? "video/mp4"
-          : match
-          ? `image/${match[1]}`
-          : "image";
-
-      formData.append("file", {
-        uri,
-        name: filename,
-        type,
-      });
-
-      formData.append(
-        "upload_preset",
-        process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET
-      );
-
-      if (mediaType === "video") {
-        formData.append("resource_type", "video");
-      }
-
-      console.log(formData.get("file"));
-
-      const response = await fetch(
-        `https://api.cloudinary.com/v1_1/${process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME}/${mediaType}/upload`,
-        {
-          method: "POST",
-          body: formData,
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.message || "Upload failed");
-      }
-
-      console.log("Upload response:", data);
-      return data.secure_url;
-    } catch (error) {
-      console.error("Upload error:", error);
-      throw error;
-    }
-  };
+  //uploadMediaAsync is in utils/common.js
 
   const handleSendMedia = async () => {
     try {
@@ -633,20 +580,20 @@ export default function ChatRoom() {
                   onPress={() => handleOpenMap()}
                   className="bg-neutral-200 p-2 mr-2 rounded-full"
                 >
-                  <Feather name="map" size={hp(2.7)} color="#737373" />
+                  <Feather name="map" size={hp(2.7)} color="mediumpurple" />
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => handleSendMedia()}
                   className="bg-neutral-200 p-2 mr-2 rounded-full"
                 >
-                  <Feather name="image" size={hp(2.7)} color="#737373" />
+                  <Feather name="image" size={hp(2.7)} color="mediumpurple" />
                 </TouchableOpacity>
-                <TouchableOpacity
+                {/* <TouchableOpacity
                   onPress={() => handleSendMedia()}
                   className="bg-neutral-200 p-2 mr-2 rounded-full"
                 >
-                  <Feather name="video" size={hp(2.7)} color="#737373" />
-                </TouchableOpacity>
+                  <Feather name="video" size={hp(2.7)} color="mediumpurple" />
+                </TouchableOpacity> */}
               </View>
               <View className="flex-1 flex-row justify-between bg-white border p-2 border-neutral-300 rounded-full pl-5">
                 <TextInput
@@ -660,7 +607,7 @@ export default function ChatRoom() {
                   onPress={handleSendMessage}
                   className="bg-neutral-200 p-2 mr-[1px] rounded-full"
                 >
-                  <Feather name="send" size={hp(2.7)} color="#737373" />
+                  <Feather name="send" size={hp(2.7)} color="mediumpurple" />
                 </TouchableOpacity>
               </View>
             </View>

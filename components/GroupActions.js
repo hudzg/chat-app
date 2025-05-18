@@ -13,6 +13,9 @@ import {
   deleteDoc,
   arrayUnion,
 } from "firebase/firestore";
+import * as ImagePicker from "expo-image-picker";
+import { uploadMediaAsync } from "../utils/common";
+
 
 export const createGroup = async (groupData) => {
   try {
@@ -183,3 +186,48 @@ export const deleteOneMessage = async (groupId, messageId, deleteForEveryone = f
     console.error("Error deleting message:", error);
   }
 };
+
+export const sendMedia = async (groupId, sender) => {
+    try {
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert(
+          "Sorry, we need camera roll permissions to make this work!"
+        );
+        return;
+      }
+
+      const pickerResult = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+        videoMaxDuration: 60,
+      });
+
+      if (!pickerResult.canceled) {
+        const mediaUri = pickerResult.assets[0].uri;
+        const mediaType = pickerResult.assets[0].type || "image";
+
+        const downloadURL = await uploadMediaAsync(mediaUri, mediaType);
+
+        const docRef = doc(db, "groups", groupId);
+        const messageRef = collection(docRef, "messages");
+
+        await addDoc(messageRef, {
+          userId: sender,
+          mediaUrl: downloadURL,
+          mediaType: mediaType,
+          createdAt: Timestamp.fromDate(new Date()),
+          type: mediaType,
+          text: "Sent a media",
+        });
+
+        console.log(`Uploaded ${mediaType} and saved to Firestore!`);
+      }
+    } catch (error) {
+      console.error("Error uploading media: ", error);
+      Alert.alert("Error", "Failed to upload media");
+    }
+  };
