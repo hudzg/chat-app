@@ -2,8 +2,9 @@ import React, { useEffect, useState } from "react";
 import { doc, getDoc, onSnapshot, collection } from "firebase/firestore";
 import { db } from "../../firebaseConfig";
 import { useAuth } from "../../context/authContext";
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import Ionicons from "@expo/vector-icons/Ionicons";
+import QRCode from "react-native-qrcode-svg";
 import {
   View,
   Text,
@@ -82,10 +83,19 @@ const ProfileScreen = () => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [noFriends, setNoFriends] = useState(0);
-
+  const [qrCodeData, setQrCodeData] = useState(null);
 
   useEffect(() => {
+    if (!user?.userId) return;
     //console.log (user.userId);
+    setQrCodeData(JSON.stringify({
+        userId: user?.userId,
+        username: user?.username,
+        profileUrl: user?.profileUrl,
+        bio: user?.bio,
+        type: "friendRequest",
+      }));
+      
     const unsubcribe = onSnapshot(collection(db, "friends"), async (snapshot) => {
       //getContacts(snapshot);
       const friends1 = await snapshot.docs.map(doc => ({
@@ -150,11 +160,13 @@ const ProfileScreen = () => {
 
   const handleLogout = async () => {
     await logout();
+    router.replace('/login');
   };
 
   const handleSettings = () => {
     console.log("Setting pressed!");
   }
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
@@ -201,6 +213,31 @@ const ProfileScreen = () => {
             </View> */}
           </View>
         </View>
+
+        {/* QR code section*/}
+        <View style={styles.qrCodeSection}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>QR Code</Text>
+          </View>
+          <View style={styles.qrCodeContainer}>
+            {qrCodeData && (<TouchableOpacity onPress={() =>
+              router.push({
+                pathname: "/mediaViewer",
+                params: {
+                  qrData: qrCodeData,
+                },
+              })
+            } >
+              <QRCode
+                value={qrCodeData}
+                size={100}
+                color="black"
+                backgroundColor="white"
+              />
+            </TouchableOpacity>)}
+          </View>
+        </View>
+
         
         {/* Bio Section */}
         <View style={styles.bioSection}>
@@ -355,6 +392,29 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderBottomWidth: 1,
     borderColor: '#f0f0f0',
+  },
+  qrCodeSection: {
+    backgroundColor: '#fff',
+    marginTop: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: '#f0f0f0',
+  },
+  qrCodeContainer: {
+    width: 140,
+    alignSelf: 'center',
+    justifyContent: 'center',
+    padding: 20,
+    backgroundColor: 'white',
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    elevation: 1,
   },
   sectionHeader: {
     flexDirection: 'row',

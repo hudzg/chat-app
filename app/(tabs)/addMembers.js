@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { useLocalSearchParams, router, useFocusEffect } from "expo-router";
 import { Feather } from "@expo/vector-icons";
-
+import getAvatarUrl from "../../utils/getAvatarUrl";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -136,7 +136,7 @@ export default function AddMembers() {
                 onPress={() => toggleUserSelection(item.userId)}
               >
                 <Image
-                  source={{ uri: item.profileUrl }}
+                  source={{ uri: getAvatarUrl(item.profileUrl) }}
                   style={{ width: hp(6), height: hp(6), borderRadius: hp(3) }}
                 />
                 <Text className="flex-1 ml-3 text-base">{item.username}</Text>
