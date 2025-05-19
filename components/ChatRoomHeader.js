@@ -26,6 +26,7 @@ export default function ChatRoomHeader({
   onViewMembers,
   onDeleteChat,
   onLeaveGroup,
+  onQRCode,
   isAdmin,
 }) {
   return (
@@ -85,17 +86,6 @@ export default function ChatRoomHeader({
               >
                 {isGroup && isAdmin && (
                   <View>
-                    <MenuOption onSelect={onAddMembers}>
-                      <View className="flex-row items-center gap-2 p-2">
-                        <Ionicons
-                          name="person-add"
-                          size={hp(2.2)}
-                          color="#737373"
-                        />
-                        <Text style={{ fontSize: hp(1.8) }}>Add members</Text>
-                      </View>
-                    </MenuOption>
-
                     <MenuOption onSelect={onViewMembers}>
                       <View className="flex-row items-center gap-2 p-2">
                         <Ionicons
@@ -110,6 +100,26 @@ export default function ChatRoomHeader({
                 )}
                 {isGroup && (
                   <View>
+                    <MenuOption onSelect={onAddMembers}>
+                      <View className="flex-row items-center gap-2 p-2">
+                        <Ionicons
+                          name="person-add"
+                          size={hp(2.2)}
+                          color="#737373"
+                        />
+                        <Text style={{ fontSize: hp(1.8) }}>Add members</Text>
+                      </View>
+                    </MenuOption>
+                    <MenuOption onSelect={onQRCode}>
+                      <View className="flex-row items-center gap-2 p-2">
+                        <Ionicons
+                          name="qr-code-outline"
+                          size={hp(2.2)}
+                          color="#737373"
+                        />
+                        <Text style={{ fontSize: hp(1.8) }}>QR Code</Text>
+                      </View>
+                    </MenuOption>
                     <MenuOption onSelect={onDeleteChat}>
                       <View className="flex-row items-center gap-2 p-2">
                         <Ionicons

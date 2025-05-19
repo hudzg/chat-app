@@ -55,7 +55,7 @@ export default function ChatList({ currentUser, users }) {
     <View className="flex-1">
       <FlatList
         data={allChats}
-        contentContainerStyle={{ flex: 1, paddingVertical: 25 }}
+        contentContainerStyle={{ paddingVertical: 25 }}
         keyExtractor={(item) => item.type + '_' + (item.id || item.userId)}
         showsVerticalScrollIndicator={false}
         renderItem={({ item, index }) => (

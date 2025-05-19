@@ -21,6 +21,7 @@ import {
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import getAvatarUrl from "../../utils/getAvatarUrl";
 
 export default function CreateGroup() {
   const [groupName, setGroupName] = useState("");
@@ -121,7 +122,7 @@ export default function CreateGroup() {
     >
       <View style={styles.userItemContent}>
         <Image
-          source={{ uri: item.profileUrl }}
+          source={{ uri: getAvatarUrl(item.profileUrl) }}
           style={styles.userAvatar}
           placeholder={null}
           transition={200}
