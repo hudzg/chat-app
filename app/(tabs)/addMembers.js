@@ -148,7 +148,7 @@ export default function AddMembers() {
             keyExtractor={(item) => item.userId}
           />
           <TouchableOpacity
-            className="bg-blue-500 p-4 rounded-lg mt-4"
+            className="bg-purple-500 p-4 rounded-lg mt-4"
             onPress={handleAddMembers}
           >
             <Text className="text-white text-center font-semibold">

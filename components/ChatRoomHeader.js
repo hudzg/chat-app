@@ -14,6 +14,7 @@ import {
 import { Image } from "expo-image";
 import { blurhash } from "../utils/common";
 import React from "react";
+import getAvatarUrl from "../utils/getAvatarUrl";
 
 export default function ChatRoomHeader({
   user,
@@ -47,7 +48,7 @@ export default function ChatRoomHeader({
                 source={
                   isGroup
                     ? require("../assets/images/group-icon.png")
-                    : user?.profileUrl
+                    : getAvatarUrl(user?.profileUrl)
                 }
                 style={{ height: hp(4.5), aspectRatio: 1, borderRadius: 100 }}
                 placeholder={{ blurhash }}
@@ -86,20 +87,6 @@ export default function ChatRoomHeader({
               >
                 {isGroup && isAdmin && (
                   <View>
-                    <MenuOption onSelect={onViewMembers}>
-                      <View className="flex-row items-center gap-2 p-2">
-                        <Ionicons
-                          name="people"
-                          size={hp(2.2)}
-                          color="#737373"
-                        />
-                        <Text style={{ fontSize: hp(1.8) }}>Members</Text>
-                      </View>
-                    </MenuOption>
-                  </View>
-                )}
-                {isGroup && (
-                  <View>
                     <MenuOption onSelect={onAddMembers}>
                       <View className="flex-row items-center gap-2 p-2">
                         <Ionicons
@@ -108,6 +95,20 @@ export default function ChatRoomHeader({
                           color="#737373"
                         />
                         <Text style={{ fontSize: hp(1.8) }}>Add members</Text>
+                      </View>
+                    </MenuOption>
+                  </View>
+                )}
+                {isGroup && (
+                  <View>
+                    <MenuOption onSelect={onViewMembers}>
+                      <View className="flex-row items-center gap-2 p-2">
+                        <Ionicons
+                          name="people"
+                          size={hp(2.2)}
+                          color="#737373"
+                        />
+                        <Text style={{ fontSize: hp(1.8) }}>Members</Text>
                       </View>
                     </MenuOption>
                     <MenuOption onSelect={onQRCode}>

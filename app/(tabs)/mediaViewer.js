@@ -51,11 +51,11 @@ export default function MediaViewer() {
             color="white"
             size={wp(80)}
             backgroundColor="black"
-            logo={getAvatarUrl(qrDataObject.profileUrl)}
+            logo={(qrDataObject.type == 'friendRequest' ? getAvatarUrl(qrDataObject.profileUrl) : require('../../assets/images/group-icon.png'))}
             logoSize={hp(4)}
           />
           {/* <Image source={{ uri: getAvatarUrl(qrDataObject.profileUrl) }} style={{width: hp(6)}}/> */}
-          <Text style={{marginTop: 15, fontSize: 18, fontWeight: "bold"}}>{qrDataObject.username}</Text>
+          <Text style={{ marginTop: 15, fontSize: 18, fontWeight: "bold" }}>{(qrDataObject.type == 'friendRequest' ? qrDataObject.username : qrDataObject.groupName)}</Text>
         </View>
         
       </View>

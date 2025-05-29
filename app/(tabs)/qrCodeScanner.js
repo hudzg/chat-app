@@ -78,9 +78,9 @@ export default function QrCodeScanner() {
 
   const handleDataScanned = ({data}) => {
     try {
-      const userData = JSON.parse(data);
-      if (userData.type === 'friendRequest') {
-        if (userData.userId === user.userId) {
+      const scannedData = JSON.parse(data);
+      if (scannedData.type === 'friendRequest') {
+        if (scannedData.userId === user.userId) {
           Alert.alert("Error", "You cannot scan your own QR code");
           return;
         }
@@ -88,10 +88,21 @@ export default function QrCodeScanner() {
         router.push({
           pathname: "/otherUsersProfile",
           params: {
-            userId: userData.userId,
-            username: userData.username,
-            profileUrl: userData.profileUrl,
-            bio: userData.bio,
+            userId: scannedData.userId,
+            username: scannedData.username,
+            profileUrl: scannedData.profileUrl,
+            bio: scannedData.bio,
+            openByQRCode: true
+          }
+        });
+      } else if (scannedData.type === 'groupInvite') {
+        router.push({
+          pathname: "/groupProfile",
+          params: {
+            groupId: scannedData.groupId,
+            groupName: scannedData.groupName,
+            admin: scannedData.admin,
+            members: JSON.stringify(scannedData.members),
             openByQRCode: true
           }
         });
