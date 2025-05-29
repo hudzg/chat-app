@@ -19,6 +19,7 @@ import {
   deleteOneMessage,
   leaveGroup,
   sendMedia,
+  createGroupQRCodeData,
 } from "../../../components/GroupActions";
 import { Feather } from "@expo/vector-icons";
 import {
@@ -221,6 +222,22 @@ export default function GroupChat() {
     }
   }
 
+  const handleOpenQRCode = () => {
+    const qrCodeData = JSON.stringify({
+      groupId: item.id,
+      groupName: item.name,
+      members: item.members,
+      admin: item.admin,
+      type: 'groupInvite'
+    })
+    router.push({
+      pathname: "/mediaViewer",
+      params: {
+        qrData: qrCodeData,
+      },
+    })
+  }
+
   return (
     <CustomKeyboardView inChat={true}>
       <View className="flex-1 bg-white">
@@ -235,6 +252,7 @@ export default function GroupChat() {
           onDeleteChat={handleDeleteChat}
           onLeaveGroup={handleLeaveGroup}
           startCall={handleStartCall}
+          onQRCode={handleOpenQRCode}
         />
         <View className="flex-1 bg-neutral-100">
           <MessageList

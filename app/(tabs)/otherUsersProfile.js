@@ -48,7 +48,6 @@ export default function OtherUsersProfile() {
           "Success",
           `Friend request have already sent to ${username}`
         );
-        // Có thể thông báo cho người dùng hoặc return tại đây
       } else {
         await setDoc(doc(db, "friendRequests", `${user.userId}_${userId}`), {
           from: user.userId,
@@ -110,7 +109,7 @@ const styles = StyleSheet.create({
     width: 150,
     height: 150,
     borderRadius: 75,
-    marginTop: 150,
+    marginTop: 120,
   },
   username: {
     fontSize: 24,

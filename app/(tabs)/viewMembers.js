@@ -46,6 +46,8 @@ export default function ViewMembers() {
   );
 
   const fetchMembers = async () => {
+    setIsSelectionMode(false);
+    setSelectedUsers([]);
     try {
       const groupDoc = await getDoc(doc(db, "groups", groupId));
       const memberIds = groupDoc

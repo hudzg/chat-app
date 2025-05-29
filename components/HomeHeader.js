@@ -18,7 +18,7 @@ import { CustomMenuItem } from "./CustomMenuItem";
 import { AntDesign, Feather } from "@expo/vector-icons";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useRouter } from "expo-router";
-import QRCode from "react-native-qrcode-svg";
+import getAvatarUrl from "../utils/getAvatarUrl";
 
 const ios = Platform.OS === "ios";
 
@@ -65,7 +65,7 @@ export default function HomeHeader() {
           >
             <Image
               style={{ height: hp(4), aspectRatio: 1, borderRadius: 100 }}
-              source={user?.profileUrl}
+              source={getAvatarUrl(user?.profileUrl)}
               placeholder={{ blurhash }}
               transition={1000}
             />
