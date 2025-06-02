@@ -16,6 +16,12 @@ export default function _layout() {
   const isInMap = segments.includes("maps");
   const isMediaViewer = segments.includes("mediaViewer");
   const isCalling = segments.includes("call-screen");
+  const isInGroupCall = segments.includes("group-call-screen");
+  const isQrCodeScanner = segments.includes("qrCodeScanner");
+  const isGroupProfile = segments.includes("groupProfile");
+  const isOtherUsersProfile = segments.includes("otherUsersProfile");
+  const isViewMembers = segments.includes("viewMembers");
+  const isAddMembers = segments.includes("addMembers");
   const { top } = useSafeAreaInsets;
   const insets = useSafeAreaInsets();
   // console.log(isChatScreen);
@@ -24,7 +30,7 @@ export default function _layout() {
     <Tabs
       screenOptions={{
         tabBarStyle: {
-          display: isChatScreen || isGroupChatScreen || isInMap || isMediaViewer || isCalling ? "none" : "flex",
+          display: isChatScreen || isGroupChatScreen || isInMap || isMediaViewer || isCalling || isInGroupCall || isQrCodeScanner || isGroupProfile || isOtherUsersProfile || isViewMembers || isAddMembers ? "none" : "flex",
         },
         tabBarActiveTintColor: Colors[colorScheme ?? "dark"].tint,
         tabBarInactiveTintColor: Colors[colorScheme ?? "light"].tint,
@@ -188,7 +194,30 @@ export default function _layout() {
         options={{
           href: null,
           headerShown: false,
-          tabBarStyle: { display: 'none' }
+        }}
+      />
+
+      <Tabs.Screen
+        name="qrCodeScanner"
+        options={{
+          href: null,
+          headerShown: false,
+        }}
+      />
+
+      <Tabs.Screen
+        name="otherUsersProfile"
+        options={{
+          href: null,
+          headerShown: false,
+        }}
+      />
+
+      <Tabs.Screen
+        name="groupProfile"
+        options={{
+          href: null,
+          headerShown: false,
         }}
       />
 

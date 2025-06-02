@@ -25,6 +25,7 @@ import { removeMembersFromGroup } from "../../components/GroupActions";
 import { Ionicons } from "@expo/vector-icons";
 import { 
   widthPercentageToDP as wp,heightPercentageToDP as hp } from "react-native-responsive-screen";
+  import getAvatarUrl from "../../utils/getAvatarUrl";
 
 export default function ViewMembers() {
   const { groupId, groupName } = useLocalSearchParams();
@@ -45,6 +46,8 @@ export default function ViewMembers() {
   );
 
   const fetchMembers = async () => {
+    setIsSelectionMode(false);
+    setSelectedUsers([]);
     try {
       const groupDoc = await getDoc(doc(db, "groups", groupId));
       const memberIds = groupDoc
@@ -150,7 +153,7 @@ export default function ViewMembers() {
                 delayLongPress={500}
               >
                 <Image
-                  source={{ uri: item.profileUrl }}
+                  source={{ uri: getAvatarUrl(item.profileUrl) }}
                   style={{ width: hp(6), height: hp(6), borderRadius: hp(3) }}
                 />
                 <Text className="flex-1 ml-3 text-base">{item.username}</Text>

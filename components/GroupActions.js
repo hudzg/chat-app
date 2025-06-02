@@ -231,3 +231,24 @@ export const sendMedia = async (groupId, sender) => {
       Alert.alert("Error", "Failed to upload media");
     }
   };
+
+  export const createGroupQRCodeData = async (groupId) => {
+    try {
+      const groupRef = doc(db, "groups", groupId);
+      const groupDoc = await getDoc(groupRef);
+      if (!groupDoc.exists()) {
+        throw new Error("Group not found");
+      }
+      const groupData = groupDoc.data();
+      return {
+        groupId: groupId,
+        groupName: groupData.name,
+        members: groupData.members,
+        admin: groupData.admin,
+        type: 'groupInvite'
+      };
+    } catch (error) {
+      console.error("Error creating group QR code:", error);
+      return null;
+    }
+  }
