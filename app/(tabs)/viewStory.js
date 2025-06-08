@@ -147,7 +147,7 @@ const StoryViewerScreen = () => {
         closeStory();
       }
     } catch (e) {
-      Alert.alert('Lỗi', 'Không thể xóa story');
+      Alert.alert('Error', 'Can not delete story, please try again later.');
     }
   };
 
@@ -188,19 +188,19 @@ const StoryViewerScreen = () => {
     const created = createdAt.seconds ? createdAt.seconds * 1000 : new Date(createdAt).getTime();
     const diffMs = now - created;
     const diffH = Math.floor(diffMs / (1000 * 60 * 60));
-    if (diffH < 1) return 'Vừa xong';
-    if (diffH === 1) return '1 giờ trước';
-    return `${diffH} giờ trước`;
+    if (diffH < 1) return 'Now';
+    if (diffH === 1) return '1 hour ago';
+    return `${diffH} hours ago`;
   }
 
   const openMenu = () => setShowMenu(true);
   const closeMenu = () => setShowMenu(false);
 
   if (loading) {
-    return <View style={{flex:1, justifyContent:'center', alignItems:'center', backgroundColor:'#000'}}><Text style={{color:'#fff'}}>Đang tải story...</Text></View>;
+    return <View style={{flex:1, justifyContent:'center', alignItems:'center', backgroundColor:'#000'}}><Text style={{color:'#fff'}}>Loading stories...</Text></View>;
   }
   if (!userStories.length) {
-    return <View style={{flex:1, justifyContent:'center', alignItems:'center', backgroundColor:'#000'}}><Text style={{color:'#fff'}}>Không có story nào</Text></View>;
+    return <View style={{flex:1, justifyContent:'center', alignItems:'center', backgroundColor:'#000'}}><Text style={{color:'#fff'}}>There is no story</Text></View>;
   }
 
   const currentStory = userStories[currentStoryIndex];
@@ -240,7 +240,7 @@ const StoryViewerScreen = () => {
         {/* Footer với gửi tin nhắn */}
         <View style={styles.footer}>
           <View style={styles.replyContainerStrong}>
-            <Text style={styles.replyTextStrong}>Gửi tin nhắn</Text>
+            <Text style={styles.replyTextStrong}>Send message</Text>
             <TouchableOpacity style={styles.sendButtonStrong}>
               <Text style={styles.sendButtonTextStrong}>↑</Text>
             </TouchableOpacity>
@@ -258,10 +258,10 @@ const StoryViewerScreen = () => {
             <TouchableOpacity style={styles.menuBackdrop} onPress={closeMenu} />
             <View style={styles.menuBox}>
               <TouchableOpacity onPress={() => { closeMenu(); handleDeleteStory(); }} style={styles.menuItem}>
-                <Text style={styles.menuItemText}>Xóa story</Text>
+                <Text style={styles.menuItemText}>Delete story</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={closeMenu} style={styles.menuItem}>
-                <Text style={[styles.menuItemText, { color: '#888' }]}>Hủy</Text>
+                <Text style={[styles.menuItemText, { color: '#888' }]}>Cancel</Text>
               </TouchableOpacity>
             </View>
           </View>

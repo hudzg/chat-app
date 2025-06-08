@@ -117,9 +117,9 @@ function getTimeAgo(createdAt) {
   const created = createdAt.seconds ? createdAt.seconds * 1000 : new Date(createdAt).getTime();
   const diffMs = now - created;
   const diffH = Math.floor(diffMs / (1000 * 60 * 60));
-  if (diffH < 1) return 'Vừa xong';
-  if (diffH === 1) return '1 giờ trước';
-  return `${diffH} giờ trước`;
+  if (diffH < 1) return 'Now';
+  if (diffH === 1) return '1 hour ago';
+  return `${diffH} hours ago`;
 }
 
 const StoriesScreen = () => {
@@ -145,7 +145,7 @@ const StoriesScreen = () => {
         if (!grouped[story.userId]) {
           grouped[story.userId] = {
             userId: story.userId,
-            username: story.username || 'Người dùng',
+            username: story.username || 'User',
             avatar: story.avatar || 'https://cdn-icons-png.flaticon.com/512/9131/9131478.png',
             stories: [],
             latestMedia: story.mediaUrl,
@@ -178,7 +178,7 @@ const StoriesScreen = () => {
     try {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Cần quyền truy cập thư viện ảnh!');
+        Alert.alert('Need photo library access!');
         return;
       }
       const pickerResult = await ImagePicker.launchImageLibraryAsync({
@@ -200,11 +200,11 @@ const StoriesScreen = () => {
           mediaType,
           createdAt: new Date(),
         });
-        Alert.alert('Đăng story thành công!');
+        Alert.alert('Posted story successfully!');
       }
     } catch (error) {
       console.error('Error uploading story: ', error);
-      Alert.alert('Lỗi', 'Đăng story thất bại');
+      Alert.alert('Error', 'Failed to post story. Please try again.');
     }
   }, [user]);
 
@@ -261,7 +261,7 @@ const StoriesScreen = () => {
   const flatListData = [myStories.length === 0 ? { type: 'add' } : myStories[0], ...groupedStories];
 
   if (loading) {
-    return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><Text>Đang tải story...</Text></View>;
+    return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><Text>Loading stories...</Text></View>;
   }
 
   return (
