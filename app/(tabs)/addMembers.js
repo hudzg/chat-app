@@ -114,7 +114,7 @@ export default function AddMembers() {
   };
 
   return (
-    <View className="flex-1 bg-white p-5">
+    <View className="flex-1 bg-neutral-100 p-5">
       {loading ? (
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" color="gray" />
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
     top: hp(4),
     left: wp(4),
     opacity: 0.5,
-    backgroundColor: "white",
+    backgroundColor: "",
     padding: wp(2),
     borderRadius: 30,
     zIndex: 1,
