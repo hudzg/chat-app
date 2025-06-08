@@ -9,7 +9,9 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect } from "react";
 import { useCall } from "../../../context/callContext";
 import { Feather, MaterialIcons } from "@expo/vector-icons";
-
+import { Image } from "expo-image";
+import { blurhash } from "../../../utils/common";
+import getAvatarUrl from "../../../utils/getAvatarUrl";
 
 export default function CallScreen() {
   const params = useLocalSearchParams();
@@ -23,6 +25,7 @@ export default function CallScreen() {
     acceptCall,
     endCall,
     rejectCall,
+    callData,
   } = useCall();
 
   useEffect(() => {
@@ -43,13 +46,20 @@ export default function CallScreen() {
   if (incomingCall && !isCaller) {
     return (
       <View style={styles.incomingCallContainer}>
-        <Text style={styles.incomingCallText}>Incomming video call...</Text>
+        <Image
+          source={getAvatarUrl(callData?.remoteUser?.profileUrl)}
+          style={styles.callerAvatar}
+          placeholder={{ blurhash }}
+        />
+        <Text style={styles.callerName}>
+          {callData?.remoteUser?.username || "Unknown"}
+        </Text>
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.acceptButton} onPress={acceptCall}>
             <Text style={styles.buttonText}>Accept</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.rejectButton} onPress={rejectCall}>
-            <Text style={styles.buttonText}>Reject </Text>
+            <Text style={styles.buttonText}>Reject</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -138,6 +148,19 @@ const styles = StyleSheet.create({
     fontSize: hp(2),
     fontWeight: "bold",
   },
+  callerAvatar: {
+    height: hp(12),
+    aspectRatio: 1,
+    borderRadius: hp(6),
+    marginBottom: hp(2),
+  },
+
+  callerName: {
+    fontSize: hp(3),
+    fontWeight: "bold",
+    color: "#404040",
+    marginBottom: hp(5),
+  },
   incomingCallContainer: {
     flex: 1,
     justifyContent: "center",
@@ -189,17 +212,17 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   endCallButton: {
-    position: 'absolute',
-    bottom: hp(5),  
-    alignSelf: 'center',
-    backgroundColor: 'red',
+    position: "absolute",
+    bottom: hp(5),
+    alignSelf: "center",
+    backgroundColor: "red",
     width: hp(7),
     height: hp(7),
     borderRadius: hp(3.5),
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     elevation: 5,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
