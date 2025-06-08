@@ -279,6 +279,19 @@ export function CallProvider({ children }) {
     }
   };
 
+  const rejectCall = async () => {
+    try {
+      if (callData) {
+        await remove(ref(rtdb, `calls/${callData.callId}`));
+      }
+
+      cleanupCall();
+      router.back();
+    } catch (error) {
+      console.error("Error in endCall:", error);
+    }
+  };
+
   const cleanupCall = async () => {
     try {
       if (pc.current) {
@@ -319,6 +332,8 @@ export function CallProvider({ children }) {
         startCall,
         acceptCall,
         endCall,
+        callData,
+        rejectCall,
       }}
     >
       {children}

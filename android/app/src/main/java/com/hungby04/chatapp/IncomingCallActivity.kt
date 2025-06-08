@@ -37,31 +37,15 @@ class IncomingCallActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_incoming_call)
 
-        // Lấy thông tin từ Intent
-        val callerName = intent.getStringExtra("caller_name") ?: "Unknown Caller"
-        val callerNumber = intent.getStringExtra("caller_number") ?: "Unknown Number"
+        val viewCallButton = findViewById<Button>(R.id.view_call_button)
 
-        // Ánh xạ giao diện
-        val callerNameTextView = findViewById<TextView>(R.id.caller_name)
-        val callerImage = findViewById<ImageView>(R.id.caller_image)
-        val acceptButton = findViewById<Button>(R.id.accept_button)
-        val declineButton = findViewById<Button>(R.id.decline_button)
-
-        // Hiển thị thông tin
-        callerNameTextView.text = callerName
 
         // Kích hoạt rung và chuông
         triggerRingtoneAndVibration()
 
         // Xử lý nút Chấp nhận
-        acceptButton.setOnClickListener {
+        viewCallButton.setOnClickListener {
             // Logic chấp nhận cuộc gọi (kết nối VoIP hoặc chuyển hướng)
-            finish()
-        }
-
-        // Xử lý nút Từ chối
-        declineButton.setOnClickListener {
-            // Logic từ chối cuộc gọi
             finish()
         }
     }
